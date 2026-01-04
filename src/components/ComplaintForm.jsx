@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { addDays, format, parseISO } from 'date-fns'
 import { ATENDIMENTO_OPTIONS, RUA_OPTIONS, NO_LOCAL_OPTIONS, ACAO_TOMADA_OPTIONS } from '../lib/constants'
 import { supabase } from '../lib/supabase'
-import { Save, AlertCircle } from 'lucide-react'
+import { Save, AlertCircle, FileText, MapPin, ShieldAlert, Clock, UserCheck } from 'lucide-react'
 
 export default function ComplaintForm({ initialData = null, onSuccess }) {
     const [loading, setLoading] = useState(false)
@@ -102,41 +102,61 @@ export default function ComplaintForm({ initialData = null, onSuccess }) {
         }
     }
 
-    const Section = ({ title, children }) => (
-        <div className="bg-zinc-800 p-6 rounded-xl border border-zinc-700 shadow-sm mb-6">
-            <h3 className="text-lg font-medium text-white mb-4 border-b border-zinc-700 pb-2">{title}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    const Section = ({ title, children, icon: Icon }) => (
+        <div className="bg-zinc-800/80 backdrop-blur-sm p-6 rounded-2xl border border-zinc-700/50 shadow-xl mb-8 group hover:border-indigo-500/30 transition-all duration-300">
+            <h3 className="text-xl font-bold text-white mb-6 border-b border-zinc-700 pb-3 flex items-center gap-2">
+                {Icon && <Icon className="text-indigo-400" size={24} />}
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-zinc-400 group-hover:from-indigo-400 group-hover:to-purple-400 transition-all">
+                    {title}
+                </span>
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {children}
             </div>
         </div>
     )
 
-    const Input = ({ label, name, type = "text", ...props }) => (
-        <div className="flex flex-col">
-            <label className="text-sm font-medium text-zinc-400 mb-1">{label}</label>
+    const Input = ({ label, name, type = "text", className = "", ...props }) => (
+        <div className={`flex flex-col group/input ${className}`}>
+            <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1.5 group-focus-within/input:text-indigo-400 transition-colors">
+                {label}
+            </label>
             <input
                 name={name}
                 type={type}
                 value={formData[name] || ''}
                 onChange={handleChange}
-                className="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                className="bg-zinc-900/50 border-2 border-zinc-700/50 rounded-xl px-4 py-3 text-white 
+          focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all duration-200
+          placeholder:text-zinc-600 hover:border-zinc-600 focus:bg-zinc-900"
                 {...props}
             />
         </div>
     )
 
     const Select = ({ label, name, options, ...props }) => (
-        <div className="flex flex-col">
-            <label className="text-sm font-medium text-zinc-400 mb-1">{label}</label>
-            <select
-                name={name}
-                value={formData[name] || ''}
-                onChange={handleChange}
-                className="bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
-                {...props}
-            >
-                {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
-            </select>
+        <div className="flex flex-col group/input">
+            <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1.5 group-focus-within/input:text-indigo-400 transition-colors">
+                {label}
+            </label>
+            <div className="relative">
+                <select
+                    name={name}
+                    value={formData[name] || ''}
+                    onChange={handleChange}
+                    className="w-full bg-zinc-900/50 border-2 border-zinc-700/50 rounded-xl px-4 py-3 text-white appearance-none
+            focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all duration-200
+            hover:border-zinc-600 cursor-pointer focus:bg-zinc-900"
+                    {...props}
+                >
+                    {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                </select>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <svg className="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                </div>
+            </div>
         </div>
     )
 
@@ -149,25 +169,27 @@ export default function ComplaintForm({ initialData = null, onSuccess }) {
                 </div>
             )}
 
-            <Section title="Dados da Denúncia / Solicitação">
+            <Section title="Dados da Denúncia / Solicitação" icon={FileText}>
                 <Input label="Data" name="data_denuncia" type="date" required />
                 <Input label="Diligência (Ex: 1ª)" name="diligencia" placeholder="1ª, 2ª..." />
                 <Select label="Atendimento" name="atendimento" options={ATENDIMENTO_OPTIONS} />
                 <Input label="Nº Atendimento (0000/aaaa)" name="numero_atendimento" />
                 <div className="md:col-span-2 lg:col-span-3">
-                    <label className="text-sm font-medium text-zinc-400 mb-1">Descrição</label>
+                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1.5 transition-colors">Descrição</label>
                     <textarea
                         name="descricao"
                         rows={3}
                         value={formData.descricao || ''}
                         onChange={handleChange}
-                        className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                        className="w-full bg-zinc-900/50 border-2 border-zinc-700/50 rounded-xl px-4 py-3 text-white 
+              focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all duration-200
+              placeholder:text-zinc-600 hover:border-zinc-600 focus:bg-zinc-900"
                         placeholder="Descreva a denúncia..."
                     />
                 </div>
             </Section>
 
-            <Section title="Endereço">
+            <Section title="Endereço" icon={MapPin}>
                 <Select label="Tipo" name="rua_tipo" options={RUA_OPTIONS} />
                 <Input label="Logradouro" name="logradouro" className="md:col-span-2" />
                 <Input label="Número" name="numero" />
@@ -175,7 +197,7 @@ export default function ComplaintForm({ initialData = null, onSuccess }) {
                 <Input label="Bairro" name="bairro" />
             </Section>
 
-            <Section title="Ação da Fiscalização">
+            <Section title="Ação da Fiscalização" icon={ShieldAlert}>
                 <Select label="No Local" name="no_local" options={NO_LOCAL_OPTIONS} />
                 <Select label="Ação Tomada" name="acao_tomada" options={ACAO_TOMADA_OPTIONS} />
                 <Input label="Nº Autuação" name="numero_autuacao" />
@@ -184,30 +206,32 @@ export default function ComplaintForm({ initialData = null, onSuccess }) {
                 <Input label="Recebido Por" name="recebido_por" />
             </Section>
 
-            <Section title="Prazos">
+            <Section title="Prazos" icon={Clock}>
                 <Input label="Prazo Inicial (dias)" name="prazo_inicial" type="number" />
                 <Input label="Data Inicial" name="data_inicial" type="date" />
-                <Input label="Data Final" name="data_final" type="date" readOnly className="bg-zinc-800 text-zinc-500 cursor-not-allowed" />
+                <Input label="Data Final" name="data_final" type="date" readOnly className="opacity-50 cursor-not-allowed" />
 
-                <div className="border-t border-zinc-700 col-span-full my-2"></div>
+                <div className="border-t border-zinc-700/50 col-span-full my-2"></div>
 
                 <Input label="Prorrogação (dias)" name="prorrogacao" type="number" />
-                <Input label="Prorrogado Até" name="prorrogado_ate" type="date" readOnly className="bg-zinc-800 text-zinc-500 cursor-not-allowed" />
+                <Input label="Prorrogado Até" name="prorrogado_ate" type="date" readOnly className="opacity-50 cursor-not-allowed" />
             </Section>
 
-            <Section title="Identificação & Multa">
+            <Section title="Identificação & Multa" icon={UserCheck}>
                 <Input label="Categoria" name="categoria" />
                 <Input label="Fiscais Atuantes" name="fiscais_atuantes" />
                 <Input label="Nº ACI (Multa)" name="numero_aci" />
                 <Input label="Data ACI" name="data_aci" type="date" />
                 <div className="col-span-full">
-                    <label className="text-sm font-medium text-zinc-400 mb-1">Observação</label>
+                    <label className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1.5 transition-colors">Observação</label>
                     <textarea
                         name="observacao"
                         rows={2}
                         value={formData.observacao || ''}
                         onChange={handleChange}
-                        className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-3 py-2 text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                        className="w-full bg-zinc-900/50 border-2 border-zinc-700/50 rounded-xl px-4 py-3 text-white 
+              focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all duration-200
+              placeholder:text-zinc-600 hover:border-zinc-600 focus:bg-zinc-900"
                     />
                 </div>
             </Section>

@@ -13,6 +13,7 @@ export const AuthProvider = ({ children }) => {
     const [role, setRole] = useState(null)
 
     useEffect(() => {
+        let mounted = true
         // Check active sessions and sets the user
         const initAuth = async () => {
             try {
@@ -25,14 +26,20 @@ export const AuthProvider = ({ children }) => {
             } catch (error) {
                 console.error('Auth initialization error:', error.message)
             } finally {
-                setLoading(false)
+                if (mounted) setLoading(false)
             }
         }
 
         initAuth()
 
+        // Safety timeout to prevent white screen
+        const timer = setTimeout(() => {
+            if (mounted) setLoading(false)
+        }, 2000)
+
         // Listen for changes on auth state (logged in, signed out, etc.)
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+            if (!mounted) return
             setSession(session)
             setUser(session?.user ?? null)
             if (session?.user) {
@@ -43,7 +50,11 @@ export const AuthProvider = ({ children }) => {
             setLoading(false)
         })
 
-        return () => subscription.unsubscribe()
+        return () => {
+            mounted = false
+            clearTimeout(timer)
+            subscription.unsubscribe()
+        }
     }, [])
 
     const fetchRole = async (userId) => {
