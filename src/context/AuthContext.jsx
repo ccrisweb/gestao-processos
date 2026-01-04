@@ -14,12 +14,22 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         // Check active sessions and sets the user
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session)
-            setUser(session?.user ?? null)
-            if (session?.user) fetchRole(session.user.id)
-            setLoading(false)
-        })
+        const initAuth = async () => {
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession()
+                if (error) throw error
+
+                setSession(session)
+                setUser(session?.user ?? null)
+                if (session?.user) await fetchRole(session.user.id)
+            } catch (error) {
+                console.error('Auth initialization error:', error.message)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        initAuth()
 
         // Listen for changes on auth state (logged in, signed out, etc.)
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
