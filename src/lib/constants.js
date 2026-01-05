@@ -17,17 +17,15 @@ export const ATENDIMENTO_OPTIONS = [
 ];
 
 export const RUA_OPTIONS = [
-    "Avenida",
-    "Beco",
-    "Estrada",
-    "Marginal",
-    "Praça",
-    "Praia",
-    "Rua",
-    "Servidão",
-    "Travessa",
-    "Viela",
-    "Lote"
+    'Rua', 'Avenida', 'Travessa', 'Alameda', 'Beco', 'Rodovia', 'Estrada', 'Servidão', 'Passarela'
+];
+
+export const BAIRRO_OPTIONS = [
+    'Ariribá', 'Jardim Bandeirantes', 'Barra', 'Centro', 'Estados', 'Estaleiro',
+    'Estaleirinho', 'Jardim Iate Clube', 'Itapema', 'Laranjeiras', 'Lot. Denise',
+    'Municípios', 'Nações', 'Nova Esperança', 'Pinho', 'Pioneiros', 'Praia',
+    'Praia dos Amores', 'São Judas', 'Taquaras', 'Taquarinhas', 'Várzea do Ranchinho',
+    'Vila Fortaleza', 'Vila Real'
 ];
 
 export const NO_LOCAL_OPTIONS = [
