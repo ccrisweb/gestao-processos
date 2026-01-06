@@ -19,14 +19,29 @@ export default function ComplaintTable() {
 
     const fetchComplaints = async () => {
         try {
-            const { data, error } = await supabase
+            // Add timeout to prevent infinite loading
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Timeout ao carregar dados')), 15000)
+            )
+
+            const fetchPromise = supabase
                 .from('complaints')
                 .select('*')
                 .order('created_at', { ascending: false })
 
-            if (data) setComplaints(data)
+            const { data, error } = await Promise.race([fetchPromise, timeoutPromise])
+
+            if (error) {
+                console.error('Error fetching complaints:', error)
+                // Set empty array on error so UI shows "no data" instead of loading
+                setComplaints([])
+            } else if (data) {
+                setComplaints(data)
+            }
         } catch (error) {
             console.error('Error fetching complaints:', error)
+            // Set empty array on timeout/error
+            setComplaints([])
         } finally {
             setLoading(false)
         }
