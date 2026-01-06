@@ -296,56 +296,54 @@ export default function ComplaintForm({ initialData = null, onSuccess }) {
                 {currentStep === 4 && (
                     <>
                         <Section title="Prazos" icon={Clock}>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <Input
-                                    label="Prazo (Dias)"
-                                    name="prazo_dias"
-                                    type="number"
-                                    value={formData.prazo_dias}
-                                    handleChange={handleChange}
-                                    placeholder="Ex: 30"
-                                />
-                                <Input
-                                    label="Data Inicial"
-                                    name="data_inicial"
-                                    type="date"
-                                    value={formData.data_inicial}
-                                    handleChange={handleChange}
-                                />
-                                <Input
-                                    label="Data Final"
-                                    name="data_final"
-                                    type="date"
-                                    value={formData.data_final}
-                                    handleChange={handleChange}
-                                    required
-                                />
-                                <Input
-                                    label="Prorr. (Dias)"
-                                    name="prorrogacao_dias"
-                                    type="number"
-                                    value={formData.prorrogacao_dias}
-                                    handleChange={handleChange}
-                                    placeholder="Ex: 15"
-                                />
-                                <Input
-                                    label="Prorrogado Até"
-                                    name="prorrogado_ate"
-                                    type="date"
-                                    value={formData.prorrogado_ate}
-                                    handleChange={handleChange}
-                                />
+                            <Input
+                                label="Prazo (Dias)"
+                                name="prazo_dias"
+                                type="number"
+                                value={formData.prazo_dias}
+                                handleChange={handleChange}
+                                placeholder="Ex: 30"
+                            />
+                            <Input
+                                label="Data Inicial"
+                                name="data_inicial"
+                                type="date"
+                                value={formData.data_inicial}
+                                handleChange={handleChange}
+                            />
+                            <Input
+                                label="Data Final"
+                                name="data_final"
+                                type="date"
+                                value={formData.data_final}
+                                handleChange={handleChange}
+                                required
+                            />
+                            <Input
+                                label="Prorr. (Dias)"
+                                name="prorrogacao_dias"
+                                type="number"
+                                value={formData.prorrogacao_dias}
+                                handleChange={handleChange}
+                                placeholder="Ex: 15"
+                            />
+                            <Input
+                                label="Prorrogado Até"
+                                name="prorrogado_ate"
+                                type="date"
+                                value={formData.prorrogado_ate}
+                                handleChange={handleChange}
+                            />
 
-                                {/* New SITUAÇÃO Field */}
-                                <div className="space-y-1">
-                                    <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1.5">
-                                        Situação
-                                    </label>
-                                    <div className={`w-full px-2 py-3 rounded-xl border flex items-center justify-center ${statusColorClass} transition-colors duration-200 shadow-sm`}>
-                                        <span className="uppercase tracking-wide text-sm font-bold text-center">
-                                            {currentStatus.label}
-                                        </span>
-                                    </div>
+                            {/* SITUAÇÃO Field */}
+                            <div className="space-y-1">
+                                <label className="block text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1.5">
+                                    Situação
+                                </label>
+                                <div className={`w-full px-2 py-3 rounded-xl border flex items-center justify-center ${statusColorClass} transition-colors duration-200 shadow-sm`}>
+                                    <span className="uppercase tracking-wide text-sm font-bold text-center">
+                                        {currentStatus.label}
+                                    </span>
                                 </div>
                             </div>
                         </Section>
