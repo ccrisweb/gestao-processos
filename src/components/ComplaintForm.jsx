@@ -126,9 +126,9 @@ export default function ComplaintForm({ initialData = null, onSuccess }) {
         setError('')
 
         try {
-            // Safety timeout race to prevent infinite loading
+            // Increased timeout to 30 seconds for database operations
             const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Tempo limite excedido ao salvar.')), 10000)
+                setTimeout(() => reject(new Error('Tempo limite excedido ao salvar. Verifique sua conexão.')), 30000)
             )
 
             const savePromise = (async () => {
@@ -137,19 +137,27 @@ export default function ComplaintForm({ initialData = null, onSuccess }) {
                     user_id: user?.id
                 }
 
+                console.log('Saving complaint:', payload)
+
                 const { data, error: insertError } = await supabase
                     .from('complaints')
                     .insert([payload])
                     .select()
 
-                if (insertError) throw insertError
+                if (insertError) {
+                    console.error('Database error:', insertError)
+                    throw new Error(insertError.message || 'Erro ao salvar no banco de dados')
+                }
+
+                console.log('Save successful:', data)
                 return data
             })()
 
             await Promise.race([savePromise, timeoutPromise])
 
+            // Success - navigate to dashboard using HashRouter path
             if (onSuccess) onSuccess()
-            navigate('/dashboard')
+            navigate('/')  // HashRouter uses '/' for dashboard
         } catch (err) {
             console.error('Error saving:', err)
             setError('Erro ao salvar: ' + (err.message || 'Erro desconhecido. Verifique sua conexão.'))
