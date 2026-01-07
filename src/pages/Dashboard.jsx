@@ -1,40 +1,69 @@
 
 import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 import { supabase } from '../lib/supabase'
 import ComplaintTable from '../components/ComplaintTable'
-import { PlusCircle, LogOut } from 'lucide-react'
+import { StatsSkeleton } from '../components/Skeleton'
+import { PieChart, BarChart } from '../components/Charts'
+import { PlusCircle, LogOut, TrendingUp, Calendar, AlertCircle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 export default function Dashboard() {
     const { user, signOut } = useAuth()
+    const toast = useToast()
     const navigate = useNavigate()
     const [stats, setStats] = useState({ total: 0, open: 0, expired: 0 })
+    const [loadingStats, setLoadingStats] = useState(true)
+    const [chartData, setChartData] = useState({ byStatus: [], byMonth: [] })
 
     useEffect(() => {
         fetchStats()
     }, [])
 
     const fetchStats = async () => {
-        // Simple count query - optimization: use count() instead of fetching all
-        // For MVP/small data, fetching all is fine or using specific RPCs
-        const { count: total } = await supabase.from('complaints').select('*', { count: 'exact', head: true })
+        setLoadingStats(true)
+        try {
+            // Simple count query - optimization: use count() instead of fetching all
+            // For MVP/small data, fetching all is fine or using specific RPCs
+            const { count: total } = await supabase.from('complaints').select('*', { count: 'exact', head: true })
 
-        // For expired/open, we'd need date logic. simpler to query all ID + Dates
-        const { data } = await supabase.from('complaints').select('data_final, prorrogado_ate')
+            // For expired/open, we'd need date logic. simpler to query all ID + Dates
+            const { data } = await supabase.from('complaints').select('data_final, prorrogado_ate')
 
-        if (data) {
-            const now = new Date().toISOString().split('T')[0]
-            let expired = 0
-            let open = 0
+            if (data) {
+                const now = new Date().toISOString().split('T')[0]
+                let expired = 0
+                let open = 0
+                let pending = 0
 
-            data.forEach(item => {
-                const finalDate = item.prorrogado_ate || item.data_final
-                if (finalDate && finalDate < now) expired++
-                else open++
-            })
+                data.forEach(item => {
+                    const finalDate = item.prorrogado_ate || item.data_final
+                    if (!finalDate) {
+                        pending++
+                    } else if (finalDate < now) {
+                        expired++
+                    } else {
+                        open++
+                    }
+                })
 
-            setStats({ total: total || 0, open, expired })
+                setStats({ total: total || 0, open, expired })
+
+                // Prepare chart data
+                setChartData({
+                    byStatus: [
+                        { label: 'Em Aberto', value: open, color: '#22c55e' },
+                        { label: 'Vencidos', value: expired, color: '#ef4444' },
+                        { label: 'Pendentes', value: pending, color: '#6b7280' }
+                    ],
+                    byMonth: [] // Can be expanded later with monthly data
+                })
+            }
+        } catch (error) {
+            console.error('Error fetching stats:', error)
+        } finally {
+            setLoadingStats(false)
         }
     }
 
@@ -69,25 +98,52 @@ export default function Dashboard() {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-zinc-800/50 backdrop-blur border border-zinc-700 p-6 rounded-2xl relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                            <PlusCircle size={64} />
+                {loadingStats ? (
+                    <StatsSkeleton />
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="bg-zinc-800/50 backdrop-blur border border-zinc-700 p-6 rounded-2xl relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                <PlusCircle size={64} />
+                            </div>
+                            <h3 className="text-zinc-400 text-sm font-medium uppercase tracking-wider">Total Registrados</h3>
+                            <p className="text-4xl font-bold mt-2">{stats.total}</p>
                         </div>
-                        <h3 className="text-zinc-400 text-sm font-medium uppercase tracking-wider">Total Registrados</h3>
-                        <p className="text-4xl font-bold mt-2">{stats.total}</p>
-                    </div>
 
-                    <div className="bg-zinc-800/50 backdrop-blur border border-zinc-700 p-6 rounded-2xl relative overflow-hidden">
-                        <h3 className="text-zinc-400 text-sm font-medium uppercase tracking-wider">Em Aberto</h3>
-                        <p className="text-4xl font-bold mt-2 text-yellow-500">{stats.open}</p>
-                    </div>
+                        <div className="bg-zinc-800/50 backdrop-blur border border-zinc-700 p-6 rounded-2xl relative overflow-hidden">
+                            <h3 className="text-zinc-400 text-sm font-medium uppercase tracking-wider">Em Aberto</h3>
+                            <p className="text-4xl font-bold mt-2 text-yellow-500">{stats.open}</p>
+                        </div>
 
-                    <div className="bg-zinc-800/50 backdrop-blur border border-zinc-700 p-6 rounded-2xl relative overflow-hidden">
-                        <h3 className="text-zinc-400 text-sm font-medium uppercase tracking-wider">Vencidos</h3>
-                        <p className="text-4xl font-bold mt-2 text-red-500">{stats.expired}</p>
+                        <div className="bg-zinc-800/50 backdrop-blur border border-zinc-700 p-6 rounded-2xl relative overflow-hidden">
+                            <h3 className="text-zinc-400 text-sm font-medium uppercase tracking-wider">Vencidos</h3>
+                            <p className="text-4xl font-bold mt-2 text-red-500">{stats.expired}</p>
+                        </div>
                     </div>
-                </div>
+                )}
+
+                {/* Charts Section */}
+                {!loadingStats && chartData.byStatus.length > 0 && (
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Pie Chart - Status Distribution */}
+                        <div className="bg-zinc-800/50 backdrop-blur border border-zinc-700 p-6 rounded-2xl">
+                            <div className="flex items-center gap-2 mb-6">
+                                <TrendingUp className="text-indigo-400" size={24} />
+                                <h3 className="text-lg font-semibold text-white">Distribuição por Status</h3>
+                            </div>
+                            <PieChart data={chartData.byStatus} size={220} />
+                        </div>
+
+                        {/* Bar Chart - Status Breakdown */}
+                        <div className="bg-zinc-800/50 backdrop-blur border border-zinc-700 p-6 rounded-2xl">
+                            <div className="flex items-center gap-2 mb-6">
+                                <AlertCircle className="text-purple-400" size={24} />
+                                <h3 className="text-lg font-semibold text-white">Detalhamento de Status</h3>
+                            </div>
+                            <BarChart data={chartData.byStatus} />
+                        </div>
+                    </div>
+                )}
 
                 {/* Content Area */}
                 <div className="space-y-4">

@@ -4,14 +4,17 @@ import { addDays, format, parseISO } from 'date-fns'
 import { ATENDIMENTO_OPTIONS, RUA_OPTIONS, NO_LOCAL_OPTIONS, ACAO_TOMADA_OPTIONS, BAIRRO_OPTIONS } from '../lib/constants'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 import { Save, AlertCircle, FileText, MapPin, ShieldAlert, Clock, UserCheck } from 'lucide-react'
 import { getStatus, getStatusColor } from '../lib/utils'
 
-export default function ComplaintForm({ initialData = null, onSuccess }) {
+export default function ComplaintForm({ initialData = null, onSuccess, mode = 'create' }) {
     const navigate = useNavigate()
     const { user } = useAuth()
+    const toast = useToast()
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
+    const isEditMode = mode === 'edit' && initialData
 
     // Initial State
     const [formData, setFormData] = useState({
@@ -134,19 +137,38 @@ export default function ComplaintForm({ initialData = null, onSuccess }) {
             const savePromise = (async () => {
                 const payload = {
                     ...formData,
-                    user_id: user?.id
+                    user_id: user?.id,
+                    updated_at: new Date().toISOString()
                 }
 
-                console.log('Saving complaint:', payload)
+                console.log(isEditMode ? 'Updating complaint:' : 'Creating complaint:', payload)
 
-                const { data, error: insertError } = await supabase
-                    .from('complaints')
-                    .insert([payload])
-                    .select()
+                let data, error
 
-                if (insertError) {
-                    console.error('Database error:', insertError)
-                    throw new Error(insertError.message || 'Erro ao salvar no banco de dados')
+                if (isEditMode) {
+                    // Update existing record
+                    const result = await supabase
+                        .from('complaints')
+                        .update(payload)
+                        .eq('id', initialData.id)
+                        .select()
+
+                    data = result.data
+                    error = result.error
+                } else {
+                    // Insert new record
+                    const result = await supabase
+                        .from('complaints')
+                        .insert([payload])
+                        .select()
+
+                    data = result.data
+                    error = result.error
+                }
+
+                if (error) {
+                    console.error('Database error:', error)
+                    throw new Error(error.message || 'Erro ao salvar no banco de dados')
                 }
 
                 console.log('Save successful:', data)
@@ -155,12 +177,17 @@ export default function ComplaintForm({ initialData = null, onSuccess }) {
 
             await Promise.race([savePromise, timeoutPromise])
 
-            // Success - navigate to dashboard using HashRouter path
+            // Success
+            toast.success(isEditMode ? 'Registro atualizado com sucesso!' : 'Registro criado com sucesso!')
             if (onSuccess) onSuccess()
-            navigate('/')  // HashRouter uses '/' for dashboard
+
+            // Navigate to dashboard after a short delay to show toast
+            setTimeout(() => navigate('/'), 500)
         } catch (err) {
             console.error('Error saving:', err)
-            setError('Erro ao salvar: ' + (err.message || 'Erro desconhecido. Verifique sua conexão.'))
+            const errorMsg = 'Erro ao salvar: ' + (err.message || 'Erro desconhecido. Verifique sua conexão.')
+            setError(errorMsg)
+            toast.error(errorMsg)
         } finally {
             setLoading(false)
         }
@@ -404,10 +431,10 @@ export default function ComplaintForm({ initialData = null, onSuccess }) {
                             disabled={loading}
                             className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-green-500/20 transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                         >
-                            {loading ? 'Salvando...' : (
+                            {loading ? (isEditMode ? 'Atualizando...' : 'Salvando...') : (
                                 <>
                                     <Save size={20} />
-                                    Salvar Registro
+                                    {isEditMode ? 'Atualizar Registro' : 'Salvar Registro'}
                                 </>
                             )}
                         </button>

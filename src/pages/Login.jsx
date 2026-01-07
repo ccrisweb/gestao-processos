@@ -1,11 +1,13 @@
 
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../context/ToastContext'
 import { useNavigate } from 'react-router-dom'
 import { Lock, Mail, LayoutDashboard } from 'lucide-react'
 
 export default function Login() {
     const { signIn, signUp } = useAuth()
+    const toast = useToast()
     const navigate = useNavigate()
     const [isLogin, setIsLogin] = useState(true)
     const [email, setEmail] = useState('')
@@ -36,6 +38,7 @@ export default function Login() {
 
                 if (error) throw error
                 console.log('Login successful')
+                toast.success('Login realizado com sucesso!')
                 navigate('/')
             } else {
                 const { error, data } = await Promise.race([
@@ -47,15 +50,20 @@ export default function Login() {
                 console.log('Sign Up successful', data)
 
                 if (data.session) {
+                    toast.success('Conta criada com sucesso!')
                     navigate('/')
                 } else {
-                    setMessage('Conta criada! Verifique se seu email precisa de confirmação ou faça login.')
+                    const msg = 'Conta criada! Verifique se seu email precisa de confirmação ou faça login.'
+                    setMessage(msg)
+                    toast.info(msg)
                     setIsLogin(true)
                 }
             }
         } catch (err) {
             console.error("Auth Error:", err)
-            setError(err.message || 'Falha na autenticação.')
+            const errorMsg = err.message || 'Falha na autenticação.'
+            setError(errorMsg)
+            toast.error(errorMsg)
         } finally {
             setLoading(false)
         }
