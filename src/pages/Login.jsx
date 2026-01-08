@@ -22,38 +22,48 @@ export default function Login() {
         setMessage('')
         setLoading(true)
 
-        // Timeout promise to prevent hanging - increased to 60s
-        const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Tempo limite excedido. Verifique sua conexão ou configurações do Supabase.')), 60000)
+        // Timeout promise to prevent hanging
+        const createTimeoutPromise = () => new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Tempo limite excedido. Verifique sua conexão ou configurações do Supabase.')), 30000)
         )
 
         try {
             console.log(isLogin ? 'Attempting Login...' : 'Attempting Sign Up...', { email })
 
             if (isLogin) {
-                const { error } = await Promise.race([
+                const result = await Promise.race([
                     signIn({ email, password }),
-                    timeoutPromise
+                    createTimeoutPromise()
                 ])
 
-                if (error) throw error
+                const { error } = result || {}
+                
+                if (error) {
+                    throw new Error(error.message || 'Erro ao fazer login')
+                }
+                
                 console.log('Login successful')
                 toast.success('Login realizado com sucesso!')
                 navigate('/')
             } else {
-                const { error, data } = await Promise.race([
+                const result = await Promise.race([
                     signUp({ email, password }),
-                    timeoutPromise
+                    createTimeoutPromise()
                 ])
 
-                if (error) throw error
+                const { error, data } = result || {}
+
+                if (error) {
+                    throw new Error(error.message || 'Erro ao criar conta')
+                }
+
                 console.log('Sign Up successful', data)
 
-                if (data.session) {
+                if (data?.session) {
                     toast.success('Conta criada com sucesso!')
                     navigate('/')
                 } else {
-                    const msg = 'Conta criada! Verifique se seu email precisa de confirmação ou faça login.'
+                    const msg = 'Conta criada! Verifique seu email ou faça login.'
                     setMessage(msg)
                     toast.info(msg)
                     setIsLogin(true)
