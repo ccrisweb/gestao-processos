@@ -22,9 +22,9 @@ export default function Login() {
         setMessage('')
         setLoading(true)
 
-        // Timeout promise to prevent hanging
+        // Timeout promise to prevent hanging - increased to 60s
         const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('Tempo limite excedido. Verifique sua conexão ou configurações do Supabase.')), 15000)
+            setTimeout(() => reject(new Error('Tempo limite excedido. Verifique sua conexão ou configurações do Supabase.')), 60000)
         )
 
         try {

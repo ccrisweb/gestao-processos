@@ -7,12 +7,12 @@ export const MobileCard = ({ complaint, onView, onEdit, onDelete, role, getStatu
     const status = getStatus(complaint)
 
     return (
-        <div className="bg-zinc-800/50 backdrop-blur border border-zinc-700 rounded-xl p-4 space-y-3">
+        <div className="bg-zinc-800/50 backdrop-blur border border-zinc-700 rounded-xl p-4 space-y-3 hover:border-indigo-500/30 transition-all hover-lift">
             {/* Header */}
             <div className="flex items-start justify-between">
                 <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                        <span className={`px-2 py-1 rounded-full text-xs font-bold border ${getStatusColor(status.color)}`}>
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        <span className={`px-2 py-1 rounded-full text-xs font-bold border transition-all ${getStatusColor(status.color)}`}>
                             {status.label}
                         </span>
                         <span className="text-xs text-zinc-500">{complaint.data_denuncia}</span>
@@ -22,15 +22,17 @@ export const MobileCard = ({ complaint, onView, onEdit, onDelete, role, getStatu
                 </div>
                 <button
                     onClick={() => setIsExpanded(!isExpanded)}
-                    className="p-2 hover:bg-zinc-700 rounded-lg transition-colors"
+                    className="p-2 hover:bg-zinc-700 rounded-lg transition-all ripple-container"
                 >
-                    {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                    {isExpanded ? <ChevronUp size={20} className="transition-transform" /> : <ChevronDown size={20} className="transition-transform" />}
                 </button>
             </div>
 
             {/* Expanded Details */}
-            {isExpanded && (
-                <div className="pt-3 border-t border-zinc-700 space-y-2 text-sm">
+            <div
+                className={`overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}
+            >
+                <div className="pt-3 border-t border-zinc-700 space-y-2 text-sm animate-fade-in">
                     <div className="flex justify-between">
                         <span className="text-zinc-500">Atendimento:</span>
                         <span className="text-zinc-300">{complaint.atendimento}</span>
@@ -44,26 +46,26 @@ export const MobileCard = ({ complaint, onView, onEdit, onDelete, role, getStatu
                         <span className="text-zinc-300">{complaint.data_final || '-'}</span>
                     </div>
                 </div>
-            )}
+            </div>
 
             {/* Actions */}
             <div className="flex gap-2 pt-2">
                 <button
                     onClick={() => onView(complaint)}
-                    className="flex-1 py-2 px-3 bg-blue-600/20 text-blue-400 border border-blue-600/50 rounded-lg text-sm font-medium hover:bg-blue-600/30 transition-colors"
+                    className="flex-1 py-2 px-3 bg-blue-600/20 text-blue-400 border border-blue-600/50 rounded-lg text-sm font-medium hover:bg-blue-600/30 transition-all ripple-container hover-lift"
                 >
                     Visualizar
                 </button>
                 <button
                     onClick={() => onEdit(complaint)}
-                    className="flex-1 py-2 px-3 bg-indigo-600/20 text-indigo-400 border border-indigo-600/50 rounded-lg text-sm font-medium hover:bg-indigo-600/30 transition-colors"
+                    className="flex-1 py-2 px-3 bg-indigo-600/20 text-indigo-400 border border-indigo-600/50 rounded-lg text-sm font-medium hover:bg-indigo-600/30 transition-all ripple-container hover-lift"
                 >
                     Editar
                 </button>
                 {role === 'admin' && (
                     <button
                         onClick={() => onDelete(complaint)}
-                        className="py-2 px-3 bg-red-600/20 text-red-400 border border-red-600/50 rounded-lg text-sm font-medium hover:bg-red-600/30 transition-colors"
+                        className="py-2 px-3 bg-red-600/20 text-red-400 border border-red-600/50 rounded-lg text-sm font-medium hover:bg-red-600/30 transition-all ripple-container hover-lift"
                     >
                         Excluir
                     </button>

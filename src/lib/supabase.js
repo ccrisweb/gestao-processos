@@ -13,4 +13,45 @@ if (!supabaseUrl || !supabaseKey) {
     console.error('CRITICAL: Supabase credentials missing!')
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey)
+console.log('[Supabase] Inicializando cliente...')
+console.log('[Supabase] URL:', supabaseUrl)
+
+// Custom fetch with timeout
+const fetchWithTimeout = async (url, options = {}) => {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 60000) // 60 seconds
+
+    try {
+        const response = await fetch(url, {
+            ...options,
+            signal: controller.signal,
+        })
+        clearTimeout(timeoutId)
+        return response
+    } catch (error) {
+        clearTimeout(timeoutId)
+        if (error.name === 'AbortError') {
+            throw new Error('Request timeout after 60 seconds')
+        }
+        throw error
+    }
+}
+
+export const supabase = createClient(supabaseUrl, supabaseKey, {
+    auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+    },
+    global: {
+        headers: {
+            'x-client-info': 'gestao-processos@1.0.0',
+        },
+        fetch: fetchWithTimeout,
+    },
+    db: {
+        schema: 'public',
+    },
+})
+
+console.log('[Supabase] Cliente inicializado com sucesso')
