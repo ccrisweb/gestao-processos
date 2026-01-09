@@ -11,4 +11,27 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    // Optimize bundle
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ["react", "react-dom", "react-router-dom"],
+          supabase: ["@supabase/supabase-js"],
+        },
+      },
+    },
+    // Reduce chunk size warnings
+    chunkSizeWarningLimit: 600,
+  },
+  server: {
+    // Improve dev server performance
+    middlewareMode: false,
+    // Prevent keep-alive from hanging
+    hmr: {
+      host: "localhost",
+      port: 5173,
+      protocol: "ws",
+    },
+  },
 });
