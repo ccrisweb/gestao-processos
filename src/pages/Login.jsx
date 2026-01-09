@@ -71,8 +71,8 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-900 px-4">
-      <div className="max-w-md w-full space-y-8 bg-zinc-800 p-8 rounded-xl shadow-2xl border border-zinc-700">
+    <div className="login-bg with-image flex items-center justify-center px-4">
+      <div className="max-w-md w-full space-y-8 glass p-8 rounded-xl shadow-2xl border border-zinc-700">
         <div className="text-center">
           <div className="mx-auto h-12 w-12 bg-indigo-600 rounded-lg flex items-center justify-center">
             <LayoutDashboard className="h-8 w-8 text-white" />
