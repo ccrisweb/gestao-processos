@@ -2,15 +2,15 @@
 
 import { createClient } from '@/lib/client'
 import { Button } from '@/components/ui/button'
-import { useRouter } from 'next/navigation'
+import { useNavigate } from 'react-router-dom'
 
 export function LogoutButton() {
-  const router = useRouter()
+  const navigate = useNavigate()
 
   const logout = async () => {
     const supabase = createClient()
     await supabase.auth.signOut()
-    router.push('/auth/login')
+    navigate('/auth/login')
   }
 
   return <Button onClick={logout}>Logout</Button>

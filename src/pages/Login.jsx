@@ -21,42 +21,24 @@ export default function Login() {
     setMessage("");
     setLoading(true);
 
-    // Timeout promise to prevent hanging
     const createTimeoutPromise = () =>
       new Promise((_, reject) =>
         setTimeout(
-          () =>
-            reject(
-              new Error(
-                "Tempo limite excedido. Verifique sua conexão ou configurações do Supabase."
-              )
-            ),
+          () => reject(new Error("Tempo limite excedido. Verifique sua conexão.")),
           30000
         )
       );
 
     try {
-      console.log(isLogin ? "Attempting Login..." : "Attempting Sign Up...", {
-        email,
-      });
-
       if (isLogin) {
         const result = await Promise.race([
           signIn({ email, password }),
           createTimeoutPromise(),
         ]);
 
-        console.log("Auth result (login):", result);
-
         const { error } = result || {};
+        if (error) throw new Error(error.message || "Erro ao fazer login");
 
-        if (error) {
-          // log completo para diagnóstico
-          console.error("signIn error object:", error);
-          throw new Error(error.message || "Erro ao fazer login");
-        }
-
-        console.log("Login successful");
         toast.success("Login realizado com sucesso!");
         navigate("/");
       } else {
@@ -65,16 +47,8 @@ export default function Login() {
           createTimeoutPromise(),
         ]);
 
-        console.log("Auth result (signup):", result);
-
         const { error, data } = result || {};
-
-        if (error) {
-          console.error("signUp error object:", error);
-          throw new Error(error.message || "Erro ao criar conta");
-        }
-
-        console.log("Sign Up successful", data);
+        if (error) throw new Error(error.message || "Erro ao criar conta");
 
         if (data?.session) {
           toast.success("Conta criada com sucesso!");
@@ -87,8 +61,7 @@ export default function Login() {
         }
       }
     } catch (err) {
-      console.error("Auth Error:", err);
-      const errorMsg = err.message || "Falha na autenticação.";
+      const errorMsg = err?.message || "Falha na autenticação.";
       setError(errorMsg);
       toast.error(errorMsg);
     } finally {
@@ -107,9 +80,7 @@ export default function Login() {
             {isLogin ? "Gestão de Denúncias" : "Criar Nova Conta"}
           </h2>
           <p className="mt-2 text-sm text-zinc-400">
-            {isLogin
-              ? "Entre com suas credenciais"
-              : "Preencha os dados para se registrar"}
+            {isLogin ? "Entre com suas credenciais" : "Preencha os dados para se registrar"}
           </p>
         </div>
 
@@ -159,7 +130,6 @@ export default function Login() {
                   id="password"
                   name="password"
                   type="password"
-                  autoComplete="new-password"
                   required
                   className="appearance-none rounded-lg relative block w-full pl-10 px-3 py-2 border border-zinc-600 placeholder-zinc-500 text-white bg-zinc-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors"
                   placeholder="Senha"
@@ -173,30 +143,26 @@ export default function Login() {
           <div>
             <button
               type="submit"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 transition-all shadow-[0_0_15px_rgba(79,70,229,0.3)] hover:shadow-[0_0_20px_rgba(79,70,229,0.5)]"
             >
-              {loading ? "Processando..." : isLogin ? "Entrar" : "Cadastrar"}
+              {loading ? 'Aguarde...' : isLogin ? 'Entrar' : 'Criar Conta'}
             </button>
           </div>
 
-          <div className="text-center">
-            <button
-              type="button"
-              onClick={() => {
-                setIsLogin(!isLogin);
-                setError("");
-                setMessage("");
-              }}
-              className="text-sm text-indigo-400 hover:text-indigo-300 transition-colors"
-            >
-              {isLogin
-                ? "Não tem uma conta? Crie uma agora"
-                : "Já tem uma conta? Faça login"}
-            </button>
+          <div className="flex items-center justify-between">
+            <div className="text-sm">
+              <button
+                type="button"
+                onClick={() => setIsLogin(!isLogin)}
+                className="underline text-sm text-zinc-400"
+              >
+                {isLogin ? 'Criar conta' : 'Voltar ao login'}
+              </button>
+            </div>
           </div>
         </form>
       </div>
     </div>
-  );
+  )
 }
