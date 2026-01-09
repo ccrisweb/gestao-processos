@@ -156,10 +156,14 @@ export default function ComplaintForm({
     // Client-side validation
     const validateForm = () => {
       const errs = {};
-      
+
       // Minimal validation: at least some basic data required
       // Description: only required if entered, minimum 3 characters if provided
-      if (formData.descricao && formData.descricao.trim().length > 0 && formData.descricao.trim().length < 3) {
+      if (
+        formData.descricao &&
+        formData.descricao.trim().length > 0 &&
+        formData.descricao.trim().length < 3
+      ) {
         errs.descricao = "Descrição deve ter no mínimo 3 caracteres.";
       }
 

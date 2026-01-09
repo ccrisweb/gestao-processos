@@ -8,12 +8,14 @@
 ## 🐛 Problema Identificado
 
 **Sintoma:** Ao clicar em "Salvar Registro", a mensagem aparecia:
+
 ```
 ❌ "Existem erros no formulário. Corrija e tente novamente."
 ```
 
-**Causa Raiz:** 
+**Causa Raiz:**
 A validação do formulário era muito rigorosa e exigia preenchimento de:
+
 - Descrição (mínimo 5 caracteres)
 - Logradouro (obrigatório)
 - Bairro (obrigatório)
@@ -25,9 +27,11 @@ Mesmo quando o usuário preenchesse campos opcionais, esses campos vazios causav
 ## ✅ Solução Implementada
 
 ### Arquivo Modificado
+
 [src/components/ComplaintForm.jsx](src/components/ComplaintForm.jsx)
 
 ### Mudanças
+
 ```javascript
 // ANTES (rigoroso - bloqueava salvamento):
 if (!formData.descricao || formData.descricao.trim().length < 5) {
@@ -41,14 +45,18 @@ if (!formData.bairro || formData.bairro.trim() === "") {
 }
 
 // DEPOIS (flexível - permite salvamento):
-if (formData.descricao && formData.descricao.trim().length > 0 && 
-    formData.descricao.trim().length < 3) {
+if (
+  formData.descricao &&
+  formData.descricao.trim().length > 0 &&
+  formData.descricao.trim().length < 3
+) {
   errs.descricao = "Descrição deve ter no mínimo 3 caracteres.";
 }
 // Logradouro e bairro agora são opcionais
 ```
 
 ### Validação Mantida
+
 ✅ Datas ainda são validadas (consistência)  
 ✅ Números ainda são validados (prazo >= 0)  
 ✅ Descrição se informada é validada (min 3 caracteres)
@@ -58,6 +66,7 @@ if (formData.descricao && formData.descricao.trim().length > 0 &&
 ## 🧪 Como Testar
 
 ### 1. Login com Conta Teste
+
 ```
 Email:    user@user.com
 Senha:    123456
@@ -66,6 +75,7 @@ Senha:    123456
 ### 2. Clicar em "Novo Registro"
 
 ### 3. Preencher Minimamente (Teste 1)
+
 ```
 Aba 1 - Dados da Denúncia:
 - Data: Deixar padrão (hoje)
@@ -89,6 +99,7 @@ Aba 4 - Prazos:
 ### 4. Clicar em "Salvar Registro"
 
 **✅ Esperado:**
+
 ```
 ✓ Toast de sucesso: "Registro criado com sucesso!"
 ✓ Redirecionamento para Dashboard
@@ -101,18 +112,21 @@ Aba 4 - Prazos:
 ## 📊 Cenários de Teste
 
 ### Cenário 1: Dados Mínimos (Sem Descrição/Endereço)
+
 ```
 Resultado esperado: ✅ SALVA
 Status: Deve funcionar agora
 ```
 
 ### Cenário 2: Todos os Campos Preenchidos
+
 ```
 Resultado esperado: ✅ SALVA
 Status: Continua funcionando
 ```
 
 ### Cenário 3: Descrição Muito Curta (1-2 caracteres)
+
 ```
 Descrição: "AB"
 Resultado esperado: ❌ ERRO (validação correta)
@@ -121,6 +135,7 @@ Status: Comportamento esperado
 ```
 
 ### Cenário 4: Datas Inconsistentes
+
 ```
 Data Inicial: 04/01/2026
 Data Final: 25/12/2025 (antes da inicial)
@@ -137,14 +152,16 @@ Após salvar com sucesso:
 
 1. Abrir Supabase Console
 2. SQL Editor → Execute:
+
 ```sql
-SELECT * FROM complaints 
+SELECT * FROM complaints
 WHERE user_id = (SELECT id FROM auth.users WHERE email = 'user@user.com')
-ORDER BY created_at DESC 
+ORDER BY created_at DESC
 LIMIT 1;
 ```
 
 **✅ Esperado:**
+
 - Registro aparece na tabela
 - `user_id` está preenchido
 - `created_at` tem timestamp correto
@@ -195,11 +212,13 @@ Modificações:
 ## 🔗 URLs Para Testar
 
 **Localhost (dev):**
+
 ```
 http://localhost:5173/gestao_processos/
 ```
 
 **GitHub Pages (produção - após deploy 5-10 min):**
+
 ```
 https://ccrisweb.github.io/gestao_processos/
 ```
@@ -214,6 +233,7 @@ https://ccrisweb.github.io/gestao_processos/
 **Passo 4:** Copiar o erro e reportar
 
 **Possíveis causas:**
+
 - Cache do navegador (Ctrl+F5)
 - Credenciais incorretas
 - Supabase indisponível
@@ -223,4 +243,4 @@ https://ccrisweb.github.io/gestao_processos/
 
 **Status:** 🟢 **Pronto para Testar**
 
-*Teste e confirme que o salvamento está funcionando agora!*
+_Teste e confirme que o salvamento está funcionando agora!_

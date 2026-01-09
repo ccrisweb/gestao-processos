@@ -15,6 +15,7 @@ Quando o usuário tentava salvar um novo registro no formulário, aparecia a men
 ```
 
 **Causa:** A validação exigia preenchimento obrigatório de campos que deveriam ser opcionais:
+
 - Descrição (mínimo 5 caracteres) → Agora opcional (se preenchido: mín 3)
 - Logradouro → Agora opcional
 - Bairro → Agora opcional
@@ -24,9 +25,11 @@ Quando o usuário tentava salvar um novo registro no formulário, aparecia a men
 ## 🔧 O Que Foi Feito
 
 ### Arquivo Alterado
+
 📄 [src/components/ComplaintForm.jsx](src/components/ComplaintForm.jsx#L156)
 
 ### Mudança de Código
+
 ```javascript
 // ❌ ANTES (bloqueava salvamento):
 - Descrição obrigatória (min 5 caracteres)
@@ -42,6 +45,7 @@ Quando o usuário tentava salvar um novo registro no formulário, aparecia a men
 ```
 
 ### Build & Deploy
+
 ```
 ✅ npm run build: Sucesso (2324 módulos)
 ✅ git commit: b470aa21
@@ -54,6 +58,7 @@ Quando o usuário tentava salvar um novo registro no formulário, aparecia a men
 ## 🧪 Teste Rápido (2 minutos)
 
 ### 1. Login
+
 ```
 URL: http://localhost:5173/gestao_processos/ (ou GitHub Pages)
 Email: user@user.com
@@ -61,6 +66,7 @@ Senha: 123456
 ```
 
 ### 2. Novo Registro
+
 ```
 - Clique em "Novo Registro"
 - Preencha MINIMAMENTE (ou deixe em branco):
@@ -72,11 +78,13 @@ Senha: 123456
 ```
 
 ### 3. Salvar
+
 ```
 Clique em "Salvar Registro"
 ```
 
 ### 4. Resultado Esperado
+
 ```
 ✅ Toast: "Registro criado com sucesso!"
 ✅ Redirecionamento para Dashboard
@@ -88,14 +96,14 @@ Clique em "Salvar Registro"
 
 ## 📊 Antes vs Depois
 
-| Aspecto | Antes | Depois |
-|---------|-------|--------|
-| Formulário salva vazio | ❌ Erro | ✅ Sim |
-| Descrição obrigatória | ❌ Sim (5+ chars) | ✅ Opcional (3+ se informada) |
-| Logradouro obrigatório | ❌ Sim | ✅ Opcional |
-| Bairro obrigatório | ❌ Sim | ✅ Opcional |
-| Datas validadas | ✅ Sim | ✅ Sim |
-| Números validados | ✅ Sim | ✅ Sim |
+| Aspecto                | Antes             | Depois                        |
+| ---------------------- | ----------------- | ----------------------------- |
+| Formulário salva vazio | ❌ Erro           | ✅ Sim                        |
+| Descrição obrigatória  | ❌ Sim (5+ chars) | ✅ Opcional (3+ se informada) |
+| Logradouro obrigatório | ❌ Sim            | ✅ Opcional                   |
+| Bairro obrigatório     | ❌ Sim            | ✅ Opcional                   |
+| Datas validadas        | ✅ Sim            | ✅ Sim                        |
+| Números validados      | ✅ Sim            | ✅ Sim                        |
 
 ---
 
@@ -103,7 +111,7 @@ Clique em "Salvar Registro"
 
 ✅ **Data Final:** Deve ser igual ou posterior à Data Inicial  
 ✅ **Prazo:** Deve ser >= 0  
-✅ **Descrição (se informada):** Mínimo 3 caracteres  
+✅ **Descrição (se informada):** Mínimo 3 caracteres
 
 ---
 
@@ -121,7 +129,7 @@ Clique em "Salvar Registro"
 **Branch:** main  
 **Arquivo:** src/components/ComplaintForm.jsx (linhas 156-184)  
 **Validação:** Removidas restrições de campos obrigatórios  
-**Build:** Sucesso - 2324 módulos compilados  
+**Build:** Sucesso - 2324 módulos compilados
 
 ---
 
@@ -139,7 +147,7 @@ Clique em "Salvar Registro"
 **Problema:** Validação muito rigorosa bloqueava salvamento  
 **Solução:** Flexibilizar validação para campos opcionais  
 **Status:** ✅ Corrigido, Testado, Deployado  
-**Resultado:** Usuários podem agora salvar registros normalmente  
+**Resultado:** Usuários podem agora salvar registros normalmente
 
 ---
 

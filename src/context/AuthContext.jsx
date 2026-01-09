@@ -11,6 +11,36 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState(null);
 
+  // Clear corrupted session storage on mount
+  useEffect(() => {
+    try {
+      // Remove corrupted Supabase cache entries
+      const keysToCheck = Object.keys(localStorage);
+      for (const key of keysToCheck) {
+        const lowerKey = key.toLowerCase();
+        if (
+          lowerKey.includes("supabase") ||
+          lowerKey.includes("sb-") ||
+          lowerKey.includes("token")
+        ) {
+          const value = localStorage.getItem(key);
+          // Remove if value is corrupted (undefined, null as strings, or empty)
+          if (
+            !value ||
+            value === "undefined" ||
+            value === "null" ||
+            value === ""
+          ) {
+            localStorage.removeItem(key);
+            console.log("[Auth] Removed corrupted cache:", key);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("[Auth] Cache cleanup error:", e);
+    }
+  }, []);
+
   useEffect(() => {
     let mounted = true;
     const controller = new AbortController();
@@ -26,18 +56,33 @@ export const AuthProvider = ({ children }) => {
           console.error("Auth initialization error:", error.message);
           // If the error indicates a refresh token problem, clear local session and sign out
           try {
-            if (error.message && error.message.toLowerCase().includes('refresh')) {
-              try { await supabase.auth.signOut() } catch (e) { /* ignore */ }
+            if (
+              error.message &&
+              error.message.toLowerCase().includes("refresh")
+            ) {
+              try {
+                await supabase.auth.signOut();
+              } catch (e) {
+                /* ignore */
+              }
               try {
                 for (const key of Object.keys(localStorage)) {
-                  const lk = key.toLowerCase()
-                  if (lk.includes('supabase') || lk.includes('auth') || lk.includes('token')) {
-                    try { localStorage.removeItem(key) } catch (e) { }
+                  const lk = key.toLowerCase();
+                  if (
+                    lk.includes("supabase") ||
+                    lk.includes("auth") ||
+                    lk.includes("token")
+                  ) {
+                    try {
+                      localStorage.removeItem(key);
+                    } catch (e) {}
                   }
                 }
-              } catch (e) { }
+              } catch (e) {}
             }
-          } catch (e) { /* ignore */ }
+          } catch (e) {
+            /* ignore */
+          }
         }
 
         if (mounted) {
@@ -49,18 +94,32 @@ export const AuthProvider = ({ children }) => {
         console.error("Auth initialization error:", error.message);
         // If an unexpected refresh-related error occurs here, sign out to clear state
         try {
-          if (error && error.message && error.message.toLowerCase().includes('refresh')) {
-            try { await supabase.auth.signOut() } catch (e) { /* ignore */ }
+          if (
+            error &&
+            error.message &&
+            error.message.toLowerCase().includes("refresh")
+          ) {
+            try {
+              await supabase.auth.signOut();
+            } catch (e) {
+              /* ignore */
+            }
             try {
               for (const key of Object.keys(localStorage)) {
-                const lk = key.toLowerCase()
-                if (lk.includes('supabase') || lk.includes('auth') || lk.includes('token')) {
-                  try { localStorage.removeItem(key) } catch (e) { }
+                const lk = key.toLowerCase();
+                if (
+                  lk.includes("supabase") ||
+                  lk.includes("auth") ||
+                  lk.includes("token")
+                ) {
+                  try {
+                    localStorage.removeItem(key);
+                  } catch (e) {}
                 }
               }
-            } catch (e) { }
+            } catch (e) {}
           }
-        } catch (e) { }
+        } catch (e) {}
       } finally {
         if (mounted) setLoading(false);
       }

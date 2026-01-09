@@ -58,32 +58,69 @@ export default function ComplaintTable() {
   const retryCountRef = useRef(0);
   const isMountedRef = useRef(true);
 
-  // Advanced filters
+  // Advanced filters - with validation
   const [advancedFilters, setAdvancedFilters] = useState(() => {
-    const saved = localStorage.getItem("complaintFilters");
-    return saved
-      ? JSON.parse(saved)
-      : {
-          dateFrom: "",
-          dateTo: "",
-          categoria: "",
-          fiscal: "",
-          bairro: "",
-          acaoTomada: "",
-        };
+    const defaultFilters = {
+      dateFrom: "",
+      dateTo: "",
+      categoria: "",
+      fiscal: "",
+      bairro: "",
+      acaoTomada: "",
+    };
+
+    try {
+      const saved = localStorage.getItem("complaintFilters");
+      if (!saved) return defaultFilters;
+
+      const parsed = JSON.parse(saved);
+      // Validate that parsed object has expected structure
+      if (parsed && typeof parsed === "object") {
+        return { ...defaultFilters, ...parsed };
+      }
+      return defaultFilters;
+    } catch (e) {
+      // If corrupted, remove and use defaults
+      try {
+        localStorage.removeItem("complaintFilters");
+      } catch (err) {
+        console.warn("Could not remove corrupted filters");
+      }
+      return defaultFilters;
+    }
   });
 
   useEffect(() => {
     isMountedRef.current = true;
+    const resizeController = new AbortController();
+
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize, {
+      signal: resizeController.signal,
+    });
+
     return () => {
       isMountedRef.current = false;
+      resizeController.abort();
     };
   }, []);
 
+  // Clear localStorage cache on mount to prevent stale data issues
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    try {
+      const saved = localStorage.getItem("complaintFilters");
+      if (saved) {
+        try {
+          JSON.parse(saved); // Validate JSON
+        } catch (e) {
+          // If filters are corrupted, remove them
+          localStorage.removeItem("complaintFilters");
+          console.log("[ComplaintTable] Removed corrupted filters from cache");
+        }
+      }
+    } catch (e) {
+      console.warn("[ComplaintTable] Error validating cache:", e);
+    }
   }, []);
 
   useEffect(() => {

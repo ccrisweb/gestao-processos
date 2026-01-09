@@ -42,5 +42,11 @@ export default defineConfig({
     watch: {
       usePolling: false,
     },
+    // Disable caching in dev
+    headers: {
+      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate",
+      Pragma: "no-cache",
+      Expires: "0",
+    },
   },
 });

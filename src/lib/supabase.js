@@ -78,14 +78,39 @@ const fetchWithTimeout = async (url, options = {}) => {
 
 export const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: {
-    persistSession: true,
+    persistSession: false, // Disable persistent session to avoid cache corruption
     autoRefreshToken: true,
     detectSessionInUrl: true,
+    flowType: "implicit", // Use implicit flow for GitHub Pages
+    storage: {
+      getItem: (key) => {
+        try {
+          return localStorage.getItem(key);
+        } catch (e) {
+          return null;
+        }
+      },
+      setItem: (key, value) => {
+        try {
+          localStorage.setItem(key, value);
+        } catch (e) {
+          console.warn("[Supabase] Failed to write to localStorage:", e);
+        }
+      },
+      removeItem: (key) => {
+        try {
+          localStorage.removeItem(key);
+        } catch (e) {
+          console.warn("[Supabase] Failed to remove from localStorage:", e);
+        }
+      },
+    },
   },
   global: {
     headers: {
       "x-client-info": "gestao-processos@1.0.0",
       "Content-Type": "application/json",
+      "Cache-Control": "no-store, max-age=0",
     },
     fetch: fetchWithTimeout,
   },
@@ -97,6 +122,43 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
 // Verify connection on initialization
 console.log("[Supabase] Cliente inicializado com sucesso");
 console.log("[Supabase] Verificando conexão...");
+
+// Clear corrupted Supabase cache on app start
+const clearSupabaseCache = () => {
+  try {
+    const keysToRemove = [];
+    for (const key of Object.keys(localStorage)) {
+      const lowerKey = key.toLowerCase();
+      if (
+        lowerKey.includes("supabase") ||
+        lowerKey.includes("sb-") ||
+        lowerKey.includes("auth-") ||
+        lowerKey.includes("token")
+      ) {
+        keysToRemove.push(key);
+      }
+    }
+    // Remove only invalid/corrupted cache, not current session
+    keysToRemove.forEach((key) => {
+      try {
+        const value = localStorage.getItem(key);
+        // Check if value is corrupted (not valid JSON)
+        if (value && (value === "undefined" || value === "null")) {
+          localStorage.removeItem(key);
+          console.log("[Supabase] Removed corrupted cache key:", key);
+        }
+      } catch (e) {
+        // If we can't access it, remove it
+        localStorage.removeItem(key);
+        console.log("[Supabase] Removed problematic cache key:", key);
+      }
+    });
+  } catch (e) {
+    console.warn("[Supabase] Cache cleanup failed:", e);
+  }
+};
+
+clearSupabaseCache();
 
 // Test basic connectivity
 const testConnection = async () => {
