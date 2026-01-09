@@ -501,17 +501,27 @@ export default function ComplaintForm({
               value={formData.cpf_cnpj}
               handleChange={(e) => {
                 let v = e.target.value.replace(/\D/g, "");
-                if (v.length > 14) v = v.slice(0, 14);
-
+                
+                // CPF: 11 dígitos
                 if (v.length <= 11) {
+                  // Limit to 11 digits for CPF
+                  if (v.length > 11) v = v.slice(0, 11);
+                  
+                  // Format: 000.000.000-00
                   v = v.replace(/(\d{3})(\d)/, "$1.$2");
-                  v = v.replace(/(\d{3})(\d)/, "$1.$2");
-                  v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-                } else {
+                  v = v.replace(/(\d{3})\.(\d{3})(\d)/, "$1.$2.$3");
+                  v = v.replace(/(\d{3})\.(\d{3})\.(\d{3})(\d)/, "$1.$2.$3-$4");
+                }
+                // CNPJ: 14 dígitos
+                else if (v.length >= 12) {
+                  // Limit to 14 digits for CNPJ
+                  if (v.length > 14) v = v.slice(0, 14);
+                  
+                  // Format: 00.000.000/0000-00
                   v = v.replace(/^(\d{2})(\d)/, "$1.$2");
                   v = v.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
-                  v = v.replace(/\.(\d{3})(\d)/, ".$1/$2");
-                  v = v.replace(/(\d{4})(\d)/, "$1-$2");
+                  v = v.replace(/^(\d{2})\.(\d{3})\.(\d{4})(\d)/, "$1.$2.$3/$4");
+                  v = v.replace(/^(\d{2})\.(\d{3})\.(\d{4})\/(\d{4})(\d)/, "$1.$2.$3/$4-$5");
                 }
 
                 handleChange({ target: { name: "cpf_cnpj", value: v } });
