@@ -205,7 +205,7 @@ export default function ComplaintForm({
     }
 
     try {
-      // Increased timeout to 30 seconds for database operations
+      // Increased timeout to 120 seconds for database operations
       const timeoutPromise = new Promise((_, reject) =>
         setTimeout(
           () =>
@@ -214,7 +214,7 @@ export default function ComplaintForm({
                 "Tempo limite excedido ao salvar. Verifique sua conexão."
               )
             ),
-          30000
+          120000
         )
       );
 

@@ -23,6 +23,11 @@ export default defineConfig({
     },
     // Reduce chunk size warnings
     chunkSizeWarningLimit: 600,
+    // Optimize for production
+    minify: "terser",
+    // Improve caching
+    sourcemap: false,
+    cssCodeSplit: true,
   },
   server: {
     // Improve dev server performance
@@ -32,6 +37,10 @@ export default defineConfig({
       host: "localhost",
       port: 5173,
       protocol: "ws",
+    },
+    // Optimize file watching
+    watch: {
+      usePolling: false,
     },
   },
 });

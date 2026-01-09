@@ -119,9 +119,9 @@ export default function ComplaintTable() {
         return;
       }
 
-      // Timeout promise: 30 seconds
+      // Timeout promise: 120 seconds for slow connections
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("Timeout na busca")), 30000)
+        setTimeout(() => reject(new Error("Timeout na busca")), 120000)
       );
 
       const fetchPromise = supabase
@@ -142,19 +142,21 @@ export default function ComplaintTable() {
 
         // Retry logic for transient errors
         if (
-          retryCount < 2 &&
+          retryCount < 3 &&
           (error.message.includes("timeout") ||
             error.message.includes("network") ||
-            error.code === "503")
+            error.message.includes("ECONNREFUSED") ||
+            error.code === "503" ||
+            error.code === "PGRST000")
         ) {
           console.log(
-            "[ComplaintTable] Retentando... (" + (retryCount + 1) + "/2)"
+            "[ComplaintTable] Retentando... (" + (retryCount + 1) + "/3)"
           );
           setTimeout(() => {
             if (isMountedRef.current) {
               fetchComplaints(retryCount + 1);
             }
-          }, 1000 * (retryCount + 1)); // Exponential backoff
+          }, 2000 * (retryCount + 1)); // Exponential backoff
           return;
         }
 
@@ -198,20 +200,20 @@ export default function ComplaintTable() {
 
       if (error.message === "Timeout na busca" || error.message === "Timeout") {
         // Retry on timeout
-        if (retryCount < 2) {
+        if (retryCount < 3) {
           console.log(
             "[ComplaintTable] Timeout - Retentando... (" +
               (retryCount + 1) +
-              "/2)"
+              "/3)"
           );
           setTimeout(() => {
             if (isMountedRef.current) {
               fetchComplaints(retryCount + 1);
             }
-          }, 1000 * (retryCount + 1));
+          }, 2000 * (retryCount + 1));
           return;
         }
-        console.error("[ComplaintTable] Timeout após 30 segundos");
+        console.error("[ComplaintTable] Timeout após 120 segundos");
         toast.error(
           "Timeout: A conexão com o Supabase está muito lenta. Verifique sua internet ou se o projeto está ativo."
         );

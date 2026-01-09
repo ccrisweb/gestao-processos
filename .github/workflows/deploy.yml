@@ -14,15 +14,39 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install and Build
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci --verbose
+
+      - name: Run linter
+        run: npm run lint --if-present || true
+        continue-on-error: true
+
+      - name: Build for production
         env:
+          CI: true
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         run: |
-          npm ci
-          npx vite build --mode production
+          echo "Building with environment variables..."
+          npm run build -- --mode production
 
-      - name: Deploy
+      - name: Display build output
+        run: ls -lah dist/
+
+      - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: dist
+          clean: true
+          single-commit: true
+
+      - name: Deployment Summary
+        if: always()
+        run: |
+          echo "::notice title=Deployment Info::GitHub Pages deployed at: https://ccrisweb.github.io/gestao_processos/"
