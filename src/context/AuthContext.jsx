@@ -24,7 +24,20 @@ export const AuthProvider = ({ children }) => {
         } = await supabase.auth.getSession();
         if (error) {
           console.error("Auth initialization error:", error.message);
-          // Continue anyway; user can login if needed
+          // If the error indicates a refresh token problem, clear local session and sign out
+          try {
+            if (error.message && error.message.toLowerCase().includes('refresh')) {
+              try { await supabase.auth.signOut() } catch (e) { /* ignore */ }
+              try {
+                for (const key of Object.keys(localStorage)) {
+                  const lk = key.toLowerCase()
+                  if (lk.includes('supabase') || lk.includes('auth') || lk.includes('token')) {
+                    try { localStorage.removeItem(key) } catch (e) { }
+                  }
+                }
+              } catch (e) { }
+            }
+          } catch (e) { /* ignore */ }
         }
 
         if (mounted) {
@@ -34,6 +47,20 @@ export const AuthProvider = ({ children }) => {
         }
       } catch (error) {
         console.error("Auth initialization error:", error.message);
+        // If an unexpected refresh-related error occurs here, sign out to clear state
+        try {
+          if (error && error.message && error.message.toLowerCase().includes('refresh')) {
+            try { await supabase.auth.signOut() } catch (e) { /* ignore */ }
+            try {
+              for (const key of Object.keys(localStorage)) {
+                const lk = key.toLowerCase()
+                if (lk.includes('supabase') || lk.includes('auth') || lk.includes('token')) {
+                  try { localStorage.removeItem(key) } catch (e) { }
+                }
+              }
+            } catch (e) { }
+          }
+        } catch (e) { }
       } finally {
         if (mounted) setLoading(false);
       }

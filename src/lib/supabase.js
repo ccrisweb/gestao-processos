@@ -27,6 +27,26 @@ const fetchWithTimeout = async (url, options = {}) => {
             signal: controller.signal,
         })
         clearTimeout(timeoutId)
+        try {
+            // If refresh endpoint failed, clear local persisted session to avoid refresh loops
+            const lowerUrl = (response.url || '').toLowerCase()
+            if ((lowerUrl.includes('/token') || lowerUrl.includes('refresh')) && (response.status === 400 || response.status === 401)) {
+                console.warn('[Supabase] Refresh token failed (status ' + response.status + '). Clearing local session to avoid loops.')
+                try {
+                    // Remove common supabase auth keys from storage
+                    for (const key of Object.keys(localStorage)) {
+                        if (key.toLowerCase().includes('supabase') || key.toLowerCase().includes('sb-') || key.toLowerCase().includes('auth') || key.toLowerCase().includes('token')) {
+                            try { localStorage.removeItem(key) } catch (e) { /* ignore */ }
+                        }
+                    }
+                } catch (e) {
+                    /* ignore storage cleanup errors */
+                }
+            }
+        } catch (e) {
+            // Non-fatal logging
+            console.debug('[Supabase] fetch post-check error:', e)
+        }
         return response
     } catch (error) {
         clearTimeout(timeoutId)
