@@ -14,6 +14,7 @@ export default function ComplaintForm({ initialData = null, onSuccess, mode = 'c
     const toast = useToast()
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
+    const [fieldErrors, setFieldErrors] = useState({})
     const isEditMode = mode === 'edit' && initialData
 
     // Initial State
@@ -127,6 +128,25 @@ export default function ComplaintForm({ initialData = null, onSuccess, mode = 'c
         e.preventDefault()
         setLoading(true)
         setError('')
+        setFieldErrors({})
+
+        // Client-side validation
+        const validateForm = () => {
+            const errs = {}
+            // Ensure data_final is provided and is a valid date string
+            if (!formData.data_final) {
+                errs.data_final = 'Data final é obrigatória.'
+            }
+            return errs
+        }
+
+        const errs = validateForm()
+        if (Object.keys(errs).length > 0) {
+            setFieldErrors(errs)
+            setError('Existem erros no formulário. Corrija e tente novamente.')
+            setLoading(false)
+            return
+        }
 
         try {
             // Increased timeout to 30 seconds for database operations
@@ -135,8 +155,39 @@ export default function ComplaintForm({ initialData = null, onSuccess, mode = 'c
             )
 
             const savePromise = (async () => {
+                // Sanitize payload: convert empty date strings to null and ensure numeric fields are numbers
+                const sanitizePayload = (data) => {
+                    const copy = { ...data }
+                    // Convert any empty string date-like fields to null
+                    Object.keys(copy).forEach((k) => {
+                        const v = copy[k]
+                        if (typeof v === 'string' && v.trim() === '') {
+                            // if field name contains 'data' or starts with 'data_' treat as date -> null
+                            if (k.toLowerCase().includes('data') || k.toLowerCase().includes('date') || k.toLowerCase().includes('prorrogado')) {
+                                copy[k] = null
+                            } else {
+                                // keep empty strings for textual optional fields
+                                copy[k] = ''
+                            }
+                        }
+                    })
+
+                    // Numeric fields — ensure numbers (or default 0)
+                    const intFields = ['prazo_dias', 'prorrogacao_dias']
+                    intFields.forEach((k) => {
+                        if (copy[k] === '' || copy[k] === undefined || copy[k] === null) {
+                            copy[k] = 0
+                        } else {
+                            const n = parseInt(copy[k], 10)
+                            copy[k] = Number.isNaN(n) ? 0 : n
+                        }
+                    })
+
+                    return copy
+                }
+
                 const payload = {
-                    ...formData,
+                    ...sanitizePayload(formData),
                     user_id: user?.id,
                     updated_at: new Date().toISOString()
                 }
@@ -204,6 +255,13 @@ export default function ComplaintForm({ initialData = null, onSuccess, mode = 'c
 
     const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, steps.length))
     const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1))
+
+    // Simple validity check (can be expanded)
+    const isFormValid = () => {
+        // Require data_final to be set and not empty
+        if (!formData.data_final) return false
+        return true
+    }
 
     return (
         <div className="space-y-6">
@@ -346,14 +404,19 @@ export default function ComplaintForm({ initialData = null, onSuccess, mode = 'c
                                 value={formData.data_inicial}
                                 handleChange={handleChange}
                             />
-                            <Input
-                                label="Data Final"
-                                name="data_final"
-                                type="date"
-                                value={formData.data_final}
-                                handleChange={handleChange}
-                                required
-                            />
+                            <div>
+                                <Input
+                                    label="Data Final"
+                                    name="data_final"
+                                    type="date"
+                                    value={formData.data_final}
+                                    handleChange={handleChange}
+                                    required
+                                />
+                                {fieldErrors.data_final && (
+                                    <p className="text-sm text-red-400 mt-1">{fieldErrors.data_final}</p>
+                                )}
+                            </div>
                             <Input
                                 label="Prorr. (Dias)"
                                 name="prorrogacao_dias"
@@ -428,8 +491,9 @@ export default function ComplaintForm({ initialData = null, onSuccess, mode = 'c
                     ) : (
                         <button
                             type="submit"
-                            disabled={loading}
+                            disabled={loading || !isFormValid()}
                             className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-green-500/20 transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            title={!isFormValid() ? 'Preencha os campos obrigatórios antes de salvar' : ''}
                         >
                             {loading ? (isEditMode ? 'Atualizando...' : 'Salvando...') : (
                                 <>
