@@ -1,8 +1,11 @@
-import { updateSession } from '@/middleware'
-import { type NextRequest } from 'next/server'
+import { updateSession } from "@/lib/middleware";
 
-export async function middleware(request: NextRequest) {
-  return await updateSession(request)
+// In a Vite/browser build the Next.js `NextRequest` type and middleware
+// runtime are not available. Export a thin adapter that calls the
+// lib middleware placeholder. This keeps the file present for any
+// environments that expect it while avoiding Next.js runtime types.
+export async function middleware(request: unknown) {
+  return await updateSession(request);
 }
 
 export const config = {
@@ -15,6 +18,6 @@ export const config = {
      * - images - .svg, .png, .jpg, .jpeg, .gif, .webp
      * Feel free to modify this pattern to include more paths.
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
-}
+};

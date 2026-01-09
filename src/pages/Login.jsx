@@ -24,7 +24,8 @@ export default function Login() {
     const createTimeoutPromise = () =>
       new Promise((_, reject) =>
         setTimeout(
-          () => reject(new Error("Tempo limite excedido. Verifique sua conexão.")),
+          () =>
+            reject(new Error("Tempo limite excedido. Verifique sua conexão.")),
           30000
         )
       );
@@ -80,7 +81,9 @@ export default function Login() {
             {isLogin ? "Gestão de Denúncias" : "Criar Nova Conta"}
           </h2>
           <p className="mt-2 text-sm text-zinc-400">
-            {isLogin ? "Entre com suas credenciais" : "Preencha os dados para se registrar"}
+            {isLogin
+              ? "Entre com suas credenciais"
+              : "Preencha os dados para se registrar"}
           </p>
         </div>
 
@@ -146,7 +149,7 @@ export default function Login() {
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
               disabled={loading}
             >
-              {loading ? 'Aguarde...' : isLogin ? 'Entrar' : 'Criar Conta'}
+              {loading ? "Aguarde..." : isLogin ? "Entrar" : "Criar Conta"}
             </button>
           </div>
 
@@ -157,12 +160,12 @@ export default function Login() {
                 onClick={() => setIsLogin(!isLogin)}
                 className="underline text-sm text-zinc-400"
               >
-                {isLogin ? 'Criar conta' : 'Voltar ao login'}
+                {isLogin ? "Criar conta" : "Voltar ao login"}
               </button>
             </div>
           </div>
         </form>
       </div>
     </div>
-  )
+  );
 }
