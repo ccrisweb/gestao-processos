@@ -11,11 +11,13 @@ URL: https://ccrisweb.github.io/gestao_processos/
 ```
 
 **✓ Esperado:**
+
 - Página de LOGIN aparece (não Dashboard)
 - Sem erro 404
 - Sem erro de timeout
 
 **❌ Se não funcionar:**
+
 - Aguarde 5 minutos (deploy em andamento)
 - Ctrl+F5 (hard refresh)
 - Clear cache: Ctrl+Shift+Del
@@ -25,11 +27,13 @@ URL: https://ccrisweb.github.io/gestao_processos/
 ## 2️⃣ Verificar Console (1 minuto)
 
 Abrir DevTools:
+
 ```
 F12 → Console tab
 ```
 
 **Procurar por:**
+
 ```
 [Supabase] Conexão: OK
 ```
@@ -37,6 +41,7 @@ F12 → Console tab
 **✓ Esperado:** Mensagem aparece (sem erros)
 
 **❌ Se ver error:**
+
 - Supabase URL incorreta
 - Credenciais inválidas
 - Network bloqueado
@@ -46,6 +51,7 @@ F12 → Console tab
 ## 3️⃣ Teste de Login (2 minutos)
 
 **Teste 1: Criar Conta**
+
 ```
 Email: teste.app@gmail.com (use email real)
 Senha: SenhaSegura123!
@@ -56,6 +62,7 @@ Senha: SenhaSegura123!
 - [ ] Verificação de email enviada
 
 **Teste 2: Fazer Login**
+
 ```
 Email: (do teste anterior)
 Senha: (do teste anterior)
@@ -68,6 +75,7 @@ Senha: (do teste anterior)
 **✓ Esperado:** Login bem-sucedido → Dashboard visível
 
 **❌ Se tiver erro:**
+
 - "Invalid credentials" = email/senha errado
 - "Timeout" = conexão lenta (normal com 120s timeout)
 - "Network error" = firewall/ISP bloqueando
@@ -80,6 +88,7 @@ Após fazer login, no Dashboard:
 
 1. Clique em **"Novo Registro"**
 2. Preencha:
+
    - **Título:** "Teste GitHub Pages 2024"
    - **Descrição:** "Validação de conexão Supabase estável"
    - **Tipo:** Selecione qualquer um
@@ -89,11 +98,13 @@ Após fazer login, no Dashboard:
 4. Aguarde 5 segundos
 
 **✓ Esperado:**
+
 - Toast de sucesso aparece
 - Página volta para Dashboard
 - Novo registro aparece na tabela
 
 **❌ Se não funcionar:**
+
 - Timeout após 120s = Supabase indisponível
 - Erro de validação = formulário incompleto
 - Erro de RLS = Policies não configuradas
@@ -109,18 +120,20 @@ Se o teste anterior deu sucesso, verificar banco de dados:
 3. SQL Editor → Execute:
 
 ```sql
-SELECT * FROM complaints 
-ORDER BY created_at DESC 
+SELECT * FROM complaints
+ORDER BY created_at DESC
 LIMIT 1;
 ```
 
 **✓ Esperado:**
+
 - Registro com seu título aparece
 - Campo `user_id` preenchido
 - Campo `status` = "open"
 - Timestamp correto
 
 **❌ Se não aparecer:**
+
 - Registro não foi salvo
 - RLS policy bloqueando leitura
 - Database não está acessível
@@ -129,13 +142,13 @@ LIMIT 1;
 
 ## 📊 Resumo Rápido
 
-| Teste | Status | Tempo | Crítico |
-|-------|--------|-------|---------|
-| GitHub Pages carrega | ✓ ou ❌ | 30s | 🔴 SIM |
-| Console sem erros | ✓ ou ❌ | 1m | 🟡 +/- |
-| Login funciona | ✓ ou ❌ | 2m | 🔴 SIM |
-| Salvar registro | ✓ ou ❌ | 2m | 🔴 SIM |
-| Supabase SQL | ✓ ou ❌ | 1m | 🟡 +/- |
+| Teste                | Status  | Tempo | Crítico |
+| -------------------- | ------- | ----- | ------- |
+| GitHub Pages carrega | ✓ ou ❌ | 30s   | 🔴 SIM  |
+| Console sem erros    | ✓ ou ❌ | 1m    | 🟡 +/-  |
+| Login funciona       | ✓ ou ❌ | 2m    | 🔴 SIM  |
+| Salvar registro      | ✓ ou ❌ | 2m    | 🔴 SIM  |
+| Supabase SQL         | ✓ ou ❌ | 1m    | 🟡 +/-  |
 
 **Resultado:** Se todos ✓ = **SUCESSO! Produção funcional**
 
@@ -144,6 +157,7 @@ LIMIT 1;
 ## 🚨 Troubleshooting Rápido
 
 ### Problema: "GitHub Pages não carrega"
+
 ```
 → Aguarde 5 min
 → Ctrl+F5
@@ -151,6 +165,7 @@ LIMIT 1;
 ```
 
 ### Problema: "Supabase timeout"
+
 ```
 → Normal até 120s
 → Verificar internet
@@ -158,6 +173,7 @@ LIMIT 1;
 ```
 
 ### Problema: "Login funciona mas Dashboard vazio"
+
 ```
 → Tabela complaints existe?
 → RLS policies configuradas?
@@ -165,6 +181,7 @@ LIMIT 1;
 ```
 
 ### Problema: "Salvar registro dá erro"
+
 ```
 → Todos campos preenchidos?
 → Supabase respondendo?
@@ -208,6 +225,6 @@ Próximo: Aguardar deploy e executar testes acima
 
 ---
 
-*Guia de Teste Rápido - 5 Minutos*  
-*Versão: 2.0*  
-*Status: Pronto para Validação*
+_Guia de Teste Rápido - 5 Minutos_  
+_Versão: 2.0_  
+_Status: Pronto para Validação_

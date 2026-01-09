@@ -156,22 +156,11 @@ export default function ComplaintForm({
     // Client-side validation
     const validateForm = () => {
       const errs = {};
-      // Ensure data_final is provided and is a valid date string
-      if (!formData.data_final) {
-        errs.data_final = "Data final é obrigatória.";
-      }
-
-      // Description required
-      if (!formData.descricao || formData.descricao.trim().length < 5) {
-        errs.descricao = "Descrição é obrigatória (min 5 caracteres).";
-      }
-
-      // Address fields
-      if (!formData.logradouro || formData.logradouro.trim() === "") {
-        errs.logradouro = "Logradouro é obrigatório.";
-      }
-      if (!formData.bairro || formData.bairro.trim() === "") {
-        errs.bairro = "Bairro é obrigatório.";
+      
+      // Minimal validation: at least some basic data required
+      // Description: only required if entered, minimum 3 characters if provided
+      if (formData.descricao && formData.descricao.trim().length > 0 && formData.descricao.trim().length < 3) {
+        errs.descricao = "Descrição deve ter no mínimo 3 caracteres.";
       }
 
       // Numeric sanity
@@ -179,7 +168,7 @@ export default function ComplaintForm({
         errs.prazo_dias = "Prazo deve ser >= 0.";
       }
 
-      // If data_inicial provided, ensure data_final is same or after
+      // If both dates provided, ensure data_final is same or after
       if (formData.data_inicial && formData.data_final) {
         try {
           const start = parseISO(formData.data_inicial);
