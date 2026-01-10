@@ -71,8 +71,27 @@ export default function Login() {
   };
 
   return (
-    <div className="login-bg with-image flex items-center justify-center px-4">
-      <div className="max-w-md w-full space-y-8 glass p-8 rounded-xl shadow-2xl border border-zinc-700">
+    <div className="relative min-h-screen flex items-center justify-center px-4 overflow-hidden">
+      {/* Video Background */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute top-0 left-0 min-w-full min-h-full object-cover z-0"
+      >
+        <source
+          src="https://cdn.pixabay.com/video/2022/11/26/140578-775389242_large.mp4"
+          type="video/mp4"
+        />
+        Seu navegador não suporta vídeos HTML5.
+      </video>
+
+      {/* Dark Overlay */}
+      <div className="absolute inset-0 bg-black/60 z-10" />
+
+      {/* Content */}
+      <div className="max-w-md w-full space-y-8 glass p-8 rounded-xl shadow-2xl border border-zinc-700 relative z-20">
         <div className="text-center">
           <div className="mx-auto h-12 w-12 bg-indigo-600 rounded-lg flex items-center justify-center">
             <LayoutDashboard className="h-8 w-8 text-white" />
