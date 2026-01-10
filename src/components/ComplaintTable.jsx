@@ -26,9 +26,10 @@ import { MobileCard, MobileCardSkeleton } from "./MobileCard";
 import AdvancedFilters from "./AdvancedFilters";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 
 export default function ComplaintTable() {
+
   const navigate = useNavigate();
   const { role } = useAuth();
   const toast = useToast();
@@ -510,7 +511,7 @@ export default function ComplaintTable() {
       });
 
       // Generate table with conditional formatting
-      doc.autoTable({
+      autoTable(doc, {
         head: [tableColumn],
         body: tableRows.map(row => row.data),
         startY: 38,
