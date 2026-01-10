@@ -27,6 +27,7 @@ import AdvancedFilters from "./AdvancedFilters";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import ExportModal from "./ExportModal";
 
 export default function ComplaintTable() {
 
@@ -44,6 +45,7 @@ export default function ComplaintTable() {
     complaint: null,
   });
   const [showPdfModal, setShowPdfModal] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -651,19 +653,35 @@ export default function ComplaintTable() {
             <button
               onClick={exportExcel}
               className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-green-700/20 text-green-400 border border-green-700/50 rounded-lg hover:bg-green-700/30 transition-all hover-lift"
+              title="Exportação Rápida (Excel)"
             >
-              <FileSpreadsheet size={18} />{" "}
-              <span className="hidden sm:inline">Excel</span>
+              <FileSpreadsheet size={18} />
+              <span className="hidden lg:inline">Excel</span>
             </button>
             <button
               onClick={() => setShowPdfModal(true)}
               className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-red-700/20 text-red-400 border border-red-700/50 rounded-lg hover:bg-red-700/30 transition-all hover-lift"
+              title="Exportação Rápida (PDF)"
             >
-              <FileText size={18} />{" "}
-              <span className="hidden sm:inline">PDF</span>
+              <FileText size={18} />
+              <span className="hidden lg:inline">PDF</span>
+            </button>
+            <button
+              onClick={() => setShowExportModal(true)}
+              className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-indigo-700/20 text-indigo-400 border border-indigo-700/50 rounded-lg hover:bg-indigo-700/30 transition-all hover-lift"
+              title="Relatórios Avançados"
+            >
+              <Printer size={18} />
+              <span className="hidden sm:inline">Relatórios</span>
             </button>
           </div>
         </div>
+
+        <ExportModal
+          isOpen={showExportModal}
+          onClose={() => setShowExportModal(false)}
+          data={complaints}
+        />
 
         {/* Mobile View - Cards */}
         {isMobile ? (
@@ -893,22 +911,24 @@ export default function ComplaintTable() {
             </div>
           </div>
         )}
-      </div>
+      </div >
 
       {/* Detail Modal */}
-      {showDetail && (
-        <ComplaintDetail
-          complaint={selectedComplaint}
-          onClose={() => {
-            setShowDetail(false);
-            setSelectedComplaint(null);
-          }}
-          onEdit={(complaint) => {
-            setShowDetail(false);
-            handleEdit(complaint);
-          }}
-        />
-      )}
+      {
+        showDetail && (
+          <ComplaintDetail
+            complaint={selectedComplaint}
+            onClose={() => {
+              setShowDetail(false);
+              setSelectedComplaint(null);
+            }}
+            onEdit={(complaint) => {
+              setShowDetail(false);
+              handleEdit(complaint);
+            }}
+          />
+        )
+      }
 
       {/* Delete Confirmation Dialog */}
       <ConfirmDialog
@@ -924,60 +944,62 @@ export default function ComplaintTable() {
       />
 
       {/* PDF Export Modal */}
-      {showPdfModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-zinc-800 rounded-2xl border border-zinc-700 shadow-2xl max-w-md w-full overflow-hidden animate-scale-in">
-            <div className="p-6 border-b border-zinc-700">
-              <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                <FileText className="text-red-400" />
-                Exportar Relatório PDF
-              </h3>
-              <p className="text-zinc-400 text-sm mt-1">
-                Escolha a orientação do documento
-              </p>
-            </div>
+      {
+        showPdfModal && (
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+            <div className="bg-zinc-800 rounded-2xl border border-zinc-700 shadow-2xl max-w-md w-full overflow-hidden animate-scale-in">
+              <div className="p-6 border-b border-zinc-700">
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <FileText className="text-red-400" />
+                  Exportar Relatório PDF
+                </h3>
+                <p className="text-zinc-400 text-sm mt-1">
+                  Escolha a orientação do documento
+                </p>
+              </div>
 
-            <div className="p-6 grid grid-cols-2 gap-4">
-              <button
-                onClick={() => {
-                  exportPDF("portrait");
-                  setShowPdfModal(false);
-                }}
-                className="flex flex-col items-center gap-3 p-4 rounded-xl border-2 border-zinc-700 bg-zinc-800/50 hover:border-red-500/50 hover:bg-red-500/10 transition-all duration-300 group"
-              >
-                <div className="w-12 h-16 border-2 border-zinc-500 rounded flex items-center justify-center group-hover:border-red-400 transition-colors bg-zinc-900">
-                  <div className="w-8 h-1 bg-zinc-600 rounded-full group-hover:bg-red-400/50"></div>
-                </div>
-                <span className="font-bold text-zinc-300 group-hover:text-white">Retrato</span>
-                <span className="text-xs text-zinc-500 text-center">Melhor para listas simples</span>
-              </button>
+              <div className="p-6 grid grid-cols-2 gap-4">
+                <button
+                  onClick={() => {
+                    exportPDF("portrait");
+                    setShowPdfModal(false);
+                  }}
+                  className="flex flex-col items-center gap-3 p-4 rounded-xl border-2 border-zinc-700 bg-zinc-800/50 hover:border-red-500/50 hover:bg-red-500/10 transition-all duration-300 group"
+                >
+                  <div className="w-12 h-16 border-2 border-zinc-500 rounded flex items-center justify-center group-hover:border-red-400 transition-colors bg-zinc-900">
+                    <div className="w-8 h-1 bg-zinc-600 rounded-full group-hover:bg-red-400/50"></div>
+                  </div>
+                  <span className="font-bold text-zinc-300 group-hover:text-white">Retrato</span>
+                  <span className="text-xs text-zinc-500 text-center">Melhor para listas simples</span>
+                </button>
 
-              <button
-                onClick={() => {
-                  exportPDF("landscape");
-                  setShowPdfModal(false);
-                }}
-                className="flex flex-col items-center gap-3 p-4 rounded-xl border-2 border-zinc-700 bg-zinc-800/50 hover:border-red-500/50 hover:bg-red-500/10 transition-all duration-300 group"
-              >
-                <div className="w-16 h-12 border-2 border-zinc-500 rounded flex items-center justify-center group-hover:border-red-400 transition-colors bg-zinc-900">
-                  <div className="w-12 h-1 bg-zinc-600 rounded-full group-hover:bg-red-400/50"></div>
-                </div>
-                <span className="font-bold text-zinc-300 group-hover:text-white">Paisagem</span>
-                <span className="text-xs text-zinc-500 text-center">Melhor para muitas colunas</span>
-              </button>
-            </div>
+                <button
+                  onClick={() => {
+                    exportPDF("landscape");
+                    setShowPdfModal(false);
+                  }}
+                  className="flex flex-col items-center gap-3 p-4 rounded-xl border-2 border-zinc-700 bg-zinc-800/50 hover:border-red-500/50 hover:bg-red-500/10 transition-all duration-300 group"
+                >
+                  <div className="w-16 h-12 border-2 border-zinc-500 rounded flex items-center justify-center group-hover:border-red-400 transition-colors bg-zinc-900">
+                    <div className="w-12 h-1 bg-zinc-600 rounded-full group-hover:bg-red-400/50"></div>
+                  </div>
+                  <span className="font-bold text-zinc-300 group-hover:text-white">Paisagem</span>
+                  <span className="text-xs text-zinc-500 text-center">Melhor para muitas colunas</span>
+                </button>
+              </div>
 
-            <div className="p-4 bg-zinc-900/50 border-t border-zinc-700 flex justify-end">
-              <button
-                onClick={() => setShowPdfModal(false)}
-                className="px-4 py-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors font-medium"
-              >
-                Cancelar
-              </button>
+              <div className="p-4 bg-zinc-900/50 border-t border-zinc-700 flex justify-end">
+                <button
+                  onClick={() => setShowPdfModal(false)}
+                  className="px-4 py-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors font-medium"
+                >
+                  Cancelar
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
     </>
   );
 }
