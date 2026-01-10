@@ -42,6 +42,7 @@ export default function ComplaintTable() {
     isOpen: false,
     complaint: null,
   });
+  const [showPdfModal, setShowPdfModal] = useState(false);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -443,7 +444,7 @@ export default function ComplaintTable() {
     toast.success("Arquivo Excel exportado");
   };
 
-  const exportPDF = () => {
+  const exportPDF = (orientation = "landscape") => {
     try {
       // Check if there's data to export
       if (!filteredData || filteredData.length === 0) {
@@ -453,39 +454,137 @@ export default function ComplaintTable() {
 
       toast.info("Gerando PDF...");
 
-      const doc = new jsPDF("landscape");
-      doc.text("Relatório de Denúncias", 14, 15);
+      const doc = new jsPDF(orientation);
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
 
-      const tableColumn = [
-        "Data",
-        "Atendimento",
-        "Autuado",
-        "Endereço",
-        "Status",
-        "Prazo",
-      ];
+      // Header with styling
+      doc.setFillColor(79, 70, 229); // Indigo
+      doc.rect(0, 0, pageWidth, 25, "F");
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(18);
+      doc.setFont(undefined, "bold");
+      doc.text("Relatório de Denúncias", 14, 16);
+
+      doc.setFontSize(10);
+      doc.setFont(undefined, "normal");
+      const now = new Date();
+      const dateStr = `Gerado em: ${now.toLocaleDateString("pt-BR")} às ${now.toLocaleTimeString("pt-BR")}`;
+      doc.text(dateStr, pageWidth - 14, 16, { align: "right" });
+
+      // Summary info
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(10);
+      doc.text(`Total de registros: ${filteredData.length}`, 14, 32);
+
+      // Define columns based on orientation
+      const tableColumn = orientation === "landscape"
+        ? ["Data", "Atendimento", "Autuado", "Endereço", "Bairro", "Status", "Prazo Final"]
+        : ["Data", "Autuado", "Status", "Prazo"];
+
       const tableRows = [];
 
+      // Prepare data with status colors
       filteredData.forEach((item) => {
         const status = getStatus(item);
-        const ticketData = [
-          item.data_denuncia || "-",
-          item.numero_atendimento || "-",
-          item.autuado || "-",
-          `${item.logradouro || ""}, ${item.numero || ""}`,
-          status.label,
-          item.data_final || "-",
-        ];
-        tableRows.push(ticketData);
+
+        const rowData = orientation === "landscape"
+          ? [
+            item.data_denuncia || "-",
+            item.numero_atendimento || "-",
+            item.autuado || "-",
+            `${item.logradouro || ""}, ${item.numero || ""}`,
+            item.bairro || "-",
+            status.label,
+            item.data_final || "-",
+          ]
+          : [
+            item.data_denuncia || "-",
+            item.autuado || "-",
+            status.label,
+            item.data_final || "-",
+          ];
+
+        tableRows.push({ data: rowData, status: status.color });
       });
 
+      // Generate table with conditional formatting
       doc.autoTable({
         head: [tableColumn],
-        body: tableRows,
-        startY: 20,
+        body: tableRows.map(row => row.data),
+        startY: 38,
+        theme: "grid",
+        headStyles: {
+          fillColor: [79, 70, 229], // Indigo
+          textColor: [255, 255, 255],
+          fontStyle: "bold",
+          fontSize: 9,
+          halign: "center",
+        },
+        bodyStyles: {
+          fontSize: 8,
+          cellPadding: 3,
+        },
+        alternateRowStyles: {
+          fillColor: [245, 245, 245],
+        },
+        columnStyles: orientation === "landscape" ? {
+          0: { cellWidth: 25, halign: "center" }, // Data
+          1: { cellWidth: 30, halign: "center" }, // Atendimento
+          2: { cellWidth: 40 }, // Autuado
+          3: { cellWidth: 60 }, // Endereço
+          4: { cellWidth: 35 }, // Bairro
+          5: { cellWidth: 30, halign: "center" }, // Status
+          6: { cellWidth: 25, halign: "center" }, // Prazo Final
+        } : {
+          0: { cellWidth: 30, halign: "center" }, // Data
+          1: { cellWidth: 60 }, // Autuado
+          2: { cellWidth: 35, halign: "center" }, // Status
+          3: { cellWidth: 30, halign: "center" }, // Prazo Final
+        },
+        didParseCell: function (data) {
+          // Apply conditional formatting to Status column
+          const statusColIndex = orientation === "landscape" ? 5 : 2;
+
+          if (data.column.index === statusColIndex && data.section === "body") {
+            const rowIndex = data.row.index;
+            const statusColor = tableRows[rowIndex].status;
+
+            // Set background color based on status
+            if (statusColor === "green") {
+              data.cell.styles.fillColor = [220, 252, 231]; // Light green
+              data.cell.styles.textColor = [22, 101, 52]; // Dark green
+              data.cell.styles.fontStyle = "bold";
+            } else if (statusColor === "orange") {
+              data.cell.styles.fillColor = [255, 237, 213]; // Light orange
+              data.cell.styles.textColor = [154, 52, 18]; // Dark orange
+              data.cell.styles.fontStyle = "bold";
+            } else if (statusColor === "red") {
+              data.cell.styles.fillColor = [254, 226, 226]; // Light red
+              data.cell.styles.textColor = [153, 27, 27]; // Dark red
+              data.cell.styles.fontStyle = "bold";
+            }
+          }
+        },
+        margin: { top: 38, left: 14, right: 14 },
       });
 
-      doc.save("relatorio_denuncias.pdf");
+      // Footer
+      const pageCount = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(128, 128, 128);
+        doc.text(
+          `Página ${i} de ${pageCount}`,
+          pageWidth / 2,
+          pageHeight - 10,
+          { align: "center" }
+        );
+      }
+
+      doc.save(`relatorio_denuncias_${orientation}.pdf`);
       toast.success("Arquivo PDF exportado com sucesso!");
     } catch (error) {
       console.error("Erro ao exportar PDF:", error);
@@ -556,7 +655,7 @@ export default function ComplaintTable() {
               <span className="hidden sm:inline">Excel</span>
             </button>
             <button
-              onClick={exportPDF}
+              onClick={() => setShowPdfModal(true)}
               className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-red-700/20 text-red-400 border border-red-700/50 rounded-lg hover:bg-red-700/30 transition-all hover-lift"
             >
               <FileText size={18} />{" "}
@@ -682,8 +781,8 @@ export default function ComplaintTable() {
                           <button
                             onClick={() => handleDeleteClick(item)}
                             className={`p-2 rounded-lg transition-all ripple-container ${role === "admin"
-                                ? "text-red-400 hover:bg-red-500/20"
-                                : "text-zinc-600 cursor-not-allowed"
+                              ? "text-red-400 hover:bg-red-500/20"
+                              : "text-zinc-600 cursor-not-allowed"
                               }`}
                             title={
                               role === "admin" ? "Excluir" : "Apenas Admin"
@@ -753,8 +852,8 @@ export default function ComplaintTable() {
                         key={page}
                         onClick={() => goToPage(page)}
                         className={`px-3 py-1 rounded-lg font-medium transition-all hover-lift ${currentPage === page
-                            ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/30"
-                            : "bg-zinc-800 border border-zinc-700 text-zinc-400 hover:bg-zinc-700"
+                          ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/30"
+                          : "bg-zinc-800 border border-zinc-700 text-zinc-400 hover:bg-zinc-700"
                           }`}
                       >
                         {page}
@@ -822,6 +921,62 @@ export default function ComplaintTable() {
         cancelText="Cancelar"
         type="danger"
       />
+
+      {/* PDF Export Modal */}
+      {showPdfModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div className="bg-zinc-800 rounded-2xl border border-zinc-700 shadow-2xl max-w-md w-full overflow-hidden animate-scale-in">
+            <div className="p-6 border-b border-zinc-700">
+              <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                <FileText className="text-red-400" />
+                Exportar Relatório PDF
+              </h3>
+              <p className="text-zinc-400 text-sm mt-1">
+                Escolha a orientação do documento
+              </p>
+            </div>
+
+            <div className="p-6 grid grid-cols-2 gap-4">
+              <button
+                onClick={() => {
+                  exportPDF("portrait");
+                  setShowPdfModal(false);
+                }}
+                className="flex flex-col items-center gap-3 p-4 rounded-xl border-2 border-zinc-700 bg-zinc-800/50 hover:border-red-500/50 hover:bg-red-500/10 transition-all duration-300 group"
+              >
+                <div className="w-12 h-16 border-2 border-zinc-500 rounded flex items-center justify-center group-hover:border-red-400 transition-colors bg-zinc-900">
+                  <div className="w-8 h-1 bg-zinc-600 rounded-full group-hover:bg-red-400/50"></div>
+                </div>
+                <span className="font-bold text-zinc-300 group-hover:text-white">Retrato</span>
+                <span className="text-xs text-zinc-500 text-center">Melhor para listas simples</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  exportPDF("landscape");
+                  setShowPdfModal(false);
+                }}
+                className="flex flex-col items-center gap-3 p-4 rounded-xl border-2 border-zinc-700 bg-zinc-800/50 hover:border-red-500/50 hover:bg-red-500/10 transition-all duration-300 group"
+              >
+                <div className="w-16 h-12 border-2 border-zinc-500 rounded flex items-center justify-center group-hover:border-red-400 transition-colors bg-zinc-900">
+                  <div className="w-12 h-1 bg-zinc-600 rounded-full group-hover:bg-red-400/50"></div>
+                </div>
+                <span className="font-bold text-zinc-300 group-hover:text-white">Paisagem</span>
+                <span className="text-xs text-zinc-500 text-center">Melhor para muitas colunas</span>
+              </button>
+            </div>
+
+            <div className="p-4 bg-zinc-900/50 border-t border-zinc-700 flex justify-end">
+              <button
+                onClick={() => setShowPdfModal(false)}
+                className="px-4 py-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors font-medium"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
