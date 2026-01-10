@@ -18,6 +18,7 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
+  Printer,
 } from "lucide-react";
 import ComplaintDetail from "./ComplaintDetail";
 import ConfirmDialog from "./ConfirmDialog";
