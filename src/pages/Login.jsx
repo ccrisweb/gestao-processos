@@ -172,25 +172,7 @@ export default function Login() {
           </p>
         </div>
 
-        {/* Mode Switcher Tabs (Login/Signup only) */}
-        {mode !== 'forgot' && (
-          <div className="grid grid-cols-2 gap-2 bg-zinc-800/50 p-1 rounded-lg">
-            <button
-              type="button"
-              onClick={() => setMode('login')}
-              className={`flex items-center justify-center gap-2 py-2 rounded-md transition-all text-sm font-medium ${mode === 'login' ? 'bg-indigo-600 text-white shadow-lg' : 'text-zinc-400 hover:text-white hover:bg-zinc-700/50'}`}
-            >
-              <LogIn size={16} /> Entrar
-            </button>
-            <button
-              type="button"
-              onClick={() => setMode('signup')}
-              className={`flex items-center justify-center gap-2 py-2 rounded-md transition-all text-sm font-medium ${mode === 'signup' ? 'bg-indigo-600 text-white shadow-lg' : 'text-zinc-400 hover:text-white hover:bg-zinc-700/50'}`}
-            >
-              <UserPlus size={16} /> Cadastrar
-            </button>
-          </div>
-        )}
+
 
         <form className="mt-8 space-y-6" onSubmit={mode === 'forgot' ? handleForgotPassword : handleSubmit}>
           {error && (
@@ -291,8 +273,32 @@ export default function Login() {
             </button>
           </div>
 
-          {mode === 'forgot' && (
-            <div className="text-center">
+          <div className="text-center mt-4">
+            {mode === 'login' && (
+              <p className="text-sm text-zinc-400">
+                Não tem uma conta?{' '}
+                <button
+                  type="button"
+                  onClick={() => setMode('signup')}
+                  className="font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
+                >
+                  Cadastre-se
+                </button>
+              </p>
+            )}
+            {mode === 'signup' && (
+              <p className="text-sm text-zinc-400">
+                Já tem uma conta?{' '}
+                <button
+                  type="button"
+                  onClick={() => setMode('login')}
+                  className="font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
+                >
+                  Entrar
+                </button>
+              </p>
+            )}
+            {mode === 'forgot' && (
               <button
                 type="button"
                 onClick={() => setMode('login')}
@@ -300,8 +306,8 @@ export default function Login() {
               >
                 <ArrowLeft size={16} /> Voltar para o Login
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </form>
       </div>
     </div>
