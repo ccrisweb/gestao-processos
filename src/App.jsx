@@ -7,6 +7,8 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import NewComplaint from "./pages/NewComplaint";
 import EditComplaint from "./pages/EditComplaint";
+import ResetPassword from "./pages/ResetPassword";
+import AuthListener from "./components/AuthListener";
 
 function App() {
   return (
@@ -15,12 +17,16 @@ function App() {
         <HashRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
             <Route element={<ProtectedRoute />}>
               <Route path="/" element={<Dashboard />} />
               <Route path="/new" element={<NewComplaint />} />
               <Route path="/edit/:id" element={<EditComplaint />} />
             </Route>
+
+            {/* Auth Listener to handle Password Recovery event */}
+            <Route element={<AuthListener />} />
 
             {/* Catch all - Redirect to login by default */}
             <Route path="*" element={<Navigate to="/login" replace />} />

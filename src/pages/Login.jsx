@@ -43,8 +43,15 @@ export default function Login() {
     }
 
     try {
+      // Determine the redirect URL based on environment
+      // For production (GitHub Pages), we want to redirect to the repository root
+      // Supabase will append the hash fragment with the token
+      const redirectUrl = window.location.hostname === 'localhost'
+        ? window.location.origin
+        : 'https://ccrisweb.github.io/gestao_processos/';
+
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin + "/reset-password", // Ensure this route exists or redirect to home handles it
+        redirectTo: redirectUrl,
       });
 
       if (error) throw error;
