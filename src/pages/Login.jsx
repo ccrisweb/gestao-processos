@@ -113,7 +113,17 @@ export default function Login() {
         }
       }
     } catch (err) {
-      const errorMsg = err?.message || "Falha na autenticação.";
+      let errorMsg = err?.message || "Falha na autenticação.";
+
+      // Translate common errors
+      if (errorMsg.includes("Invalid login credentials")) {
+        errorMsg = "Email ou senha incorretos.";
+      } else if (errorMsg.includes("Email not confirmed")) {
+        errorMsg = "Email não confirmado. Verifique sua caixa de entrada.";
+      } else if (errorMsg.includes("User not found")) {
+        errorMsg = "Usuário não encontrado.";
+      }
+
       setError(errorMsg);
       toast.error(errorMsg);
     } finally {
