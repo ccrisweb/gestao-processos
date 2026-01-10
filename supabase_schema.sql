@@ -48,10 +48,10 @@ create table complaints (
   recebido_por text,
   
   -- Grupo 4 - PRAZOS
-  prazo_dias int default 0, -- dias corridos
+  prazo_inicial int default 0, -- dias corridos
   data_inicial date,
   data_final date, -- Calculated in app, stored for querying
-  prorrogacao_dias int default 0, -- dias corridos
+  prorrogacao int default 0, -- dias corridos
   prorrogado_ate date, -- Calculated in app, stored for querying
   -- Situacao is derived from dates
   

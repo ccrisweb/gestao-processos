@@ -57,10 +57,10 @@ export default function ComplaintForm({
     cpf_cnpj: "",
     recebido_por: "",
     // Grupo 4
-    prazo_dias: 0,
+    prazo_inicial: 0,
     data_inicial: "",
     data_final: "",
-    prorrogacao_dias: 0,
+    prorrogacao: 0,
     prorrogado_ate: "",
     // Grupo 5
     categoria: "",
@@ -109,29 +109,29 @@ export default function ComplaintForm({
       const newData = { ...prev, [name]: value };
 
       // Auto-calculate Data Final logic
-      if (name === "data_inicial" || name === "prazo_dias") {
+      if (name === "data_inicial" || name === "prazo_inicial") {
         const start = name === "data_inicial" ? value : prev.data_inicial;
-        const days = name === "prazo_dias" ? value : prev.prazo_dias;
+        const days = name === "prazo_inicial" ? value : prev.prazo_inicial;
 
         const newDataFinal = calculateDataFinal(start, days);
         if (newDataFinal) {
           newData.data_final = newDataFinal;
           // Recalculate prorrogado_ate if needed
-          if (prev.prorrogacao_dias) {
+          if (prev.prorrogacao) {
             newData.prorrogado_ate = calculateProrrogadoAte(
               newDataFinal,
-              prev.prorrogacao_dias
+              prev.prorrogacao
             );
           }
         }
       }
 
       // Auto-calculate Prorrogado Até logic
-      if (name === "data_final" || name === "prorrogacao_dias") {
+      if (name === "data_final" || name === "prorrogacao") {
         const end =
           name === "data_final" ? value : newData.data_final || prev.data_final;
         const days =
-          name === "prorrogacao_dias" ? value : prev.prorrogacao_dias;
+          name === "prorrogacao" ? value : prev.prorrogacao;
 
         const newProrrogadoAte = calculateProrrogadoAte(end, days);
         if (newProrrogadoAte) {
@@ -168,8 +168,8 @@ export default function ComplaintForm({
       }
 
       // Numeric sanity
-      if (formData.prazo_dias && Number(formData.prazo_dias) < 0) {
-        errs.prazo_dias = "Prazo deve ser >= 0.";
+      if (formData.prazo_inicial && Number(formData.prazo_inicial) < 0) {
+        errs.prazo_inicial = "Prazo deve ser >= 0.";
       }
 
       // If both dates provided, ensure data_final is same or after
@@ -234,7 +234,7 @@ export default function ComplaintForm({
           });
 
           // Numeric fields — ensure numbers (or default 0)
-          const intFields = ["prazo_dias", "prorrogacao_dias"];
+          const intFields = ["prazo_inicial", "prorrogacao"];
           intFields.forEach((k) => {
             if (copy[k] === "" || copy[k] === undefined || copy[k] === null) {
               copy[k] = 0;
@@ -342,17 +342,15 @@ export default function ComplaintForm({
           {steps.map((step) => (
             <div
               key={step.id}
-              className={`flex flex-col items-center cursor-pointer transition-colors duration-300 ${
-                currentStep >= step.id ? "text-indigo-400" : "text-zinc-600"
-              }`}
+              className={`flex flex-col items-center cursor-pointer transition-colors duration-300 ${currentStep >= step.id ? "text-indigo-400" : "text-zinc-600"
+                }`}
               onClick={() => setCurrentStep(step.id)}
             >
               <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center border-2 mb-2 transition-all duration-500 ${
-                  currentStep >= step.id
+                className={`w-10 h-10 rounded-full flex items-center justify-center border-2 mb-2 transition-all duration-500 ${currentStep >= step.id
                     ? "border-indigo-500 bg-indigo-500/20 shadow-lg shadow-indigo-500/20"
                     : "border-zinc-700 bg-zinc-800"
-                }`}
+                  }`}
               >
                 <step.icon size={20} />
               </div>
@@ -536,9 +534,9 @@ export default function ComplaintForm({
             <Section title="Prazos" icon={Clock}>
               <Input
                 label="Prazo (Dias)"
-                name="prazo_dias"
+                name="prazo_inicial"
                 type="number"
-                value={formData.prazo_dias}
+                value={formData.prazo_inicial}
                 handleChange={handleChange}
                 placeholder="Ex: 30"
               />
@@ -566,9 +564,9 @@ export default function ComplaintForm({
               </div>
               <Input
                 label="Prorr. (Dias)"
-                name="prorrogacao_dias"
+                name="prorrogacao"
                 type="number"
-                value={formData.prorrogacao_dias}
+                value={formData.prorrogacao}
                 handleChange={handleChange}
                 placeholder="Ex: 15"
               />
@@ -644,11 +642,10 @@ export default function ComplaintForm({
           <button
             type="button"
             onClick={prevStep}
-            className={`px-6 py-3 rounded-xl font-bold transition-all ${
-              currentStep === 1
+            className={`px-6 py-3 rounded-xl font-bold transition-all ${currentStep === 1
                 ? "opacity-0 pointer-events-none"
                 : "bg-zinc-800 hover:bg-zinc-700 text-zinc-300"
-            }`}
+              }`}
           >
             Voltar
           </button>
