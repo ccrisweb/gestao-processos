@@ -415,7 +415,11 @@ html {
 
 /* Login background helper (uses local image if present, otherwise gradient fallback) */
 .login-bg {
-  background-image: linear-gradient(135deg, rgba(17,24,39,0.85), rgba(6,7,16,0.6));
+  background-image: linear-gradient(
+    135deg,
+    rgba(17, 24, 39, 0.85),
+    rgba(6, 7, 16, 0.6)
+  );
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -423,7 +427,8 @@ html {
 }
 .login-bg.with-image {
   /* prefer an image placed at public/assets/login-bg.jpg */
-  background-image: linear-gradient(rgba(6,7,16,0.45), rgba(6,7,16,0.45)), url('/assets/login-bg.jpg');
+  background-image: linear-gradient(rgba(6, 7, 16, 0.45), rgba(6, 7, 16, 0.45)),
+    url("/assets/login-bg.jpg");
 }
 
 @layer base {

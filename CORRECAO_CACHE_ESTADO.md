@@ -8,6 +8,7 @@
 ## 🐛 Problema Identificado
 
 **Sintomas:**
+
 ```
 ❌ "Ao limpar histórico tudo funciona perfeitamente"
 ❌ "Depois começam problemas de carregamento"
@@ -18,6 +19,7 @@
 
 **Causa Raiz:**
 O navegador estava acumulando cache corrompido que não era limpo:
+
 1. **persistSession ativa** → Supabase salvava sessão em localStorage que podia corromper
 2. **localStorage sem validação** → JSON inválido causava travamentos
 3. **Memory leaks** → Event listeners não eram removidos
@@ -29,6 +31,7 @@ O navegador estava acumulando cache corrompido que não era limpo:
 ## ✅ Solução Implementada
 
 ### 1. Supabase Session (src/lib/supabase.js)
+
 ```javascript
 // ❌ ANTES:
 persistSession: true  // Salvava em localStorage
@@ -43,6 +46,7 @@ persistSession: false // Session só em memória
 **Benefício:** Session não mais se corrompe no localStorage
 
 ### 2. AuthContext Cleanup (src/context/AuthContext.jsx)
+
 ```javascript
 // ✅ Novo: useEffect ao montar
 // Remove entradas corrompidas (null, undefined, "")
@@ -52,6 +56,7 @@ persistSession: false // Session só em memória
 **Benefício:** Cache corrompido é removido automaticamente
 
 ### 3. ComplaintTable Listeners (src/components/ComplaintTable.jsx)
+
 ```javascript
 // ✅ ANTES: window.addEventListener sem cleanup
 // ✅ DEPOIS: AbortController + removeEventListener
@@ -63,6 +68,7 @@ persistSession: false // Session só em memória
 **Benefício:** Sem memory leaks, sem dados corrompidos
 
 ### 4. Vite Cache Headers (vite.config.ts)
+
 ```javascript
 server: {
   headers: {
@@ -75,6 +81,7 @@ server: {
 **Benefício:** Dev server não cacheia nada
 
 ### 5. Production Headers (New Files)
+
 - `public/_headers` - Netlify headers
 - `public/.htaccess` - Apache headers
 - `vercel.json` - Vercel config
@@ -82,6 +89,7 @@ server: {
 **Benefício:** Production não cacheia HTML/JS/CSS
 
 ### 6. Novos Utilitários
+
 - `src/lib/cleanup.ts` - Gerenciador de listeners
 - `src/lib/storage-validation.ts` - Validação de dados
 
@@ -91,20 +99,21 @@ server: {
 
 ## 📊 Antes vs Depois
 
-| Aspecto | Antes | Depois |
-|---------|-------|--------|
-| persistSession | ❌ Ativo (corrompe) | ✅ Desativo (memória) |
-| localStorage validation | ❌ Nenhuma | ✅ Validação completa |
-| Event listeners | ❌ Memory leak | ✅ Cleanup automático |
-| Cache headers | ❌ Nenhum | ✅ no-store |
-| Data validation | ❌ Sem validação | ✅ Validado ao carregar |
-| Funcionamento | ❌ Trava após horas | ✅ Continua funcionando |
+| Aspecto                 | Antes               | Depois                  |
+| ----------------------- | ------------------- | ----------------------- |
+| persistSession          | ❌ Ativo (corrompe) | ✅ Desativo (memória)   |
+| localStorage validation | ❌ Nenhuma          | ✅ Validação completa   |
+| Event listeners         | ❌ Memory leak      | ✅ Cleanup automático   |
+| Cache headers           | ❌ Nenhum           | ✅ no-store             |
+| Data validation         | ❌ Sem validação    | ✅ Validado ao carregar |
+| Funcionamento           | ❌ Trava após horas | ✅ Continua funcionando |
 
 ---
 
 ## 🧪 Como Testar
 
 ### Teste 1: Uso Normal (Recomendado)
+
 ```
 1. Abrir app em http://localhost:5173/gestao_processos/
 2. NÃO limpe o cache (deixe acumular)
@@ -113,6 +122,7 @@ server: {
 ```
 
 ### Teste 2: Stress Test
+
 ```
 1. Abrir app
 2. Criar 10+ registros
@@ -124,6 +134,7 @@ server: {
 ```
 
 ### Teste 3: Verificar Cache
+
 ```
 Abrir DevTools (F12)
 Application → Storage → Local Storage
@@ -131,6 +142,7 @@ Esperado: localStorage com dados válidos (JSON bem-formado)
 ```
 
 ### Teste 4: Console Logs
+
 ```
 F12 → Console
 Procurar por: "[Supabase] Conexão: OK"
@@ -143,12 +155,14 @@ Significa: Sistema removeu cache inválido automaticamente
 ## 🔍 O Que Mudou
 
 ### Arquivos Alterados (4)
+
 1. `src/lib/supabase.js` - Session e cache control
 2. `src/context/AuthContext.jsx` - Cleanup na inicialização
 3. `src/components/ComplaintTable.jsx` - Listeners e validação
 4. `vite.config.ts` - Headers de dev
 
 ### Arquivos Novos (5)
+
 1. `src/lib/cleanup.ts` - Utilidades de cleanup
 2. `src/lib/storage-validation.ts` - Validação de dados
 3. `public/_headers` - Netlify/production headers
@@ -163,7 +177,7 @@ Significa: Sistema removeu cache inválido automaticamente
 ✅ **Dados salvam normalmente** sem erro de cache  
 ✅ **PDF e Excel exportam** sem problemas  
 ✅ **Navegação fluida** mesmo com 1000+ registros  
-✅ **Memory usage estável** (sem leaks)  
+✅ **Memory usage estável** (sem leaks)
 
 ---
 
@@ -181,18 +195,21 @@ Significa: Sistema removeu cache inválido automaticamente
 ## 💡 O Que o Sistema Faz Agora
 
 ### Na Inicialização
+
 1. Remove localStorage entries corrompidas
 2. Valida dados salvos
 3. Inicializa session apenas em memória
 4. Remove listeners não utilizados
 
 ### Durante Operação
+
 1. Valida dados antes de usar
 2. Remove listeners ao desmontar componentes
 3. Não cacheia em localStorage
 4. Valida JSON antes de parse
 
 ### Em Caso de Erro
+
 1. Detecta dados inválidos
 2. Remove entrada corrompida
 3. Usa fallback (defaults)
@@ -218,6 +235,7 @@ Significa: Sistema removeu cache inválido automaticamente
 ## ✨ Conclusão
 
 O sistema agora é **robusto contra cache corrompido** porque:
+
 1. ✅ Valida tudo ao carregar
 2. ✅ Remove dados inválidos automaticamente
 3. ✅ Session é gerenciada em memória (nunca corrompe)

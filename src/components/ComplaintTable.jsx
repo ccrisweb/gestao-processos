@@ -134,8 +134,8 @@ export default function ComplaintTable() {
     try {
       console.log(
         "[ComplaintTable] Iniciando busca de registros... (tentativa " +
-          (retryCount + 1) +
-          ")"
+        (retryCount + 1) +
+        ")"
       );
       console.log(
         "[ComplaintTable] Supabase URL:",
@@ -240,8 +240,8 @@ export default function ComplaintTable() {
         if (retryCount < 3) {
           console.log(
             "[ComplaintTable] Timeout - Retentando... (" +
-              (retryCount + 1) +
-              "/3)"
+            (retryCount + 1) +
+            "/3)"
           );
           setTimeout(() => {
             if (isMountedRef.current) {
@@ -444,40 +444,53 @@ export default function ComplaintTable() {
   };
 
   const exportPDF = () => {
-    const doc = new jsPDF("landscape");
-    doc.text("Relatório de Denúncias", 14, 15);
+    try {
+      // Check if there's data to export
+      if (!filteredData || filteredData.length === 0) {
+        toast.warning("Nenhum dado para exportar");
+        return;
+      }
 
-    const tableColumn = [
-      "Data",
-      "Atendimento",
-      "Autuado",
-      "Endereço",
-      "Status",
-      "Prazo",
-    ];
-    const tableRows = [];
+      toast.info("Gerando PDF...");
 
-    filteredData.forEach((item) => {
-      const status = getStatus(item);
-      const ticketData = [
-        item.data_denuncia,
-        item.numero_atendimento,
-        item.autuado,
-        `${item.logradouro}, ${item.numero}`,
-        status.label,
-        item.data_final,
+      const doc = new jsPDF("landscape");
+      doc.text("Relatório de Denúncias", 14, 15);
+
+      const tableColumn = [
+        "Data",
+        "Atendimento",
+        "Autuado",
+        "Endereço",
+        "Status",
+        "Prazo",
       ];
-      tableRows.push(ticketData);
-    });
+      const tableRows = [];
 
-    doc.autoTable({
-      head: [tableColumn],
-      body: tableRows,
-      startY: 20,
-    });
+      filteredData.forEach((item) => {
+        const status = getStatus(item);
+        const ticketData = [
+          item.data_denuncia || "-",
+          item.numero_atendimento || "-",
+          item.autuado || "-",
+          `${item.logradouro || ""}, ${item.numero || ""}`,
+          status.label,
+          item.data_final || "-",
+        ];
+        tableRows.push(ticketData);
+      });
 
-    doc.save("relatorio_denuncias.pdf");
-    toast.success("Arquivo PDF exportado");
+      doc.autoTable({
+        head: [tableColumn],
+        body: tableRows,
+        startY: 20,
+      });
+
+      doc.save("relatorio_denuncias.pdf");
+      toast.success("Arquivo PDF exportado com sucesso!");
+    } catch (error) {
+      console.error("Erro ao exportar PDF:", error);
+      toast.error("Erro ao exportar PDF: " + error.message);
+    }
   };
 
   if (loading)
@@ -668,11 +681,10 @@ export default function ComplaintTable() {
                           </button>
                           <button
                             onClick={() => handleDeleteClick(item)}
-                            className={`p-2 rounded-lg transition-all ripple-container ${
-                              role === "admin"
+                            className={`p-2 rounded-lg transition-all ripple-container ${role === "admin"
                                 ? "text-red-400 hover:bg-red-500/20"
                                 : "text-zinc-600 cursor-not-allowed"
-                            }`}
+                              }`}
                             title={
                               role === "admin" ? "Excluir" : "Apenas Admin"
                             }
@@ -740,11 +752,10 @@ export default function ComplaintTable() {
                       <button
                         key={page}
                         onClick={() => goToPage(page)}
-                        className={`px-3 py-1 rounded-lg font-medium transition-all hover-lift ${
-                          currentPage === page
+                        className={`px-3 py-1 rounded-lg font-medium transition-all hover-lift ${currentPage === page
                             ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/30"
                             : "bg-zinc-800 border border-zinc-700 text-zinc-400 hover:bg-zinc-700"
-                        }`}
+                          }`}
                       >
                         {page}
                       </button>
@@ -805,9 +816,8 @@ export default function ComplaintTable() {
         onClose={() => setDeleteDialog({ isOpen: false, complaint: null })}
         onConfirm={handleDeleteConfirm}
         title="Excluir Registro"
-        message={`Tem certeza que deseja excluir a denúncia de ${
-          deleteDialog.complaint?.autuado || "este registro"
-        }? Esta ação não pode ser desfeita.`}
+        message={`Tem certeza que deseja excluir a denúncia de ${deleteDialog.complaint?.autuado || "este registro"
+          }? Esta ação não pode ser desfeita.`}
         confirmText="Excluir"
         cancelText="Cancelar"
         type="danger"
