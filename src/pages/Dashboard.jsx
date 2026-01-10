@@ -13,6 +13,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { getStatus } from "../lib/utils";
 
 export default function Dashboard() {
   const { user, signOut } = useAuth();
@@ -63,19 +64,22 @@ export default function Dashboard() {
       console.log("[Dashboard] Registros com datas:", data?.length || 0);
 
       if (data) {
-        const now = new Date().toISOString().split("T")[0];
-        let expired = 0;
-        let open = 0;
-        let pending = 0;
+        let open = 0; // AGUARDAR
+        let expired = 0; // VENCIDO
+        let extended = 0; // PRORROGADO
+        let pending = 0; // Other
 
         data.forEach((item) => {
-          const finalDate = item.prorrogado_ate || item.data_final;
-          if (!finalDate) {
-            pending++;
-          } else if (finalDate < now) {
-            expired++;
-          } else {
+          const status = getStatus(item);
+
+          if (status.label === "AGUARDAR") {
             open++;
+          } else if (status.label === "VENCIDO") {
+            expired++;
+          } else if (status.label === "PRORROGADO") {
+            extended++;
+          } else {
+            pending++;
           }
         });
 
@@ -83,19 +87,21 @@ export default function Dashboard() {
           total,
           open,
           expired,
+          extended,
           pending,
         });
 
-        setStats({ total: total || 0, open, expired });
+        setStats({ total: total || 0, open, expired, extended });
 
         // Prepare chart data
         setChartData({
           byStatus: [
             { label: "Em Aberto", value: open, color: "#22c55e" },
             { label: "Vencidos", value: expired, color: "#ef4444" },
+            { label: "Prorrogados", value: extended, color: "#f97316" },
             { label: "Pendentes", value: pending, color: "#6b7280" },
-          ],
-          byMonth: [], // Can be expanded later with monthly data
+          ].filter(item => item.value > 0),
+          byMonth: [],
         });
       }
     } catch (error) {
