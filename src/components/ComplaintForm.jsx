@@ -664,14 +664,19 @@ export default function ComplaintForm({
 
           {currentStep < steps.length ? (
             <button
+              key="next-btn"
               type="button"
-              onClick={nextStep}
+              onClick={(e) => {
+                e.preventDefault();
+                nextStep();
+              }}
               className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-indigo-500/20 transition-all hover:scale-105"
             >
               Próximo
             </button>
           ) : (
             <button
+              key="submit-btn"
               type="submit"
               disabled={loading || !isFormValid()}
               className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-green-500/20 transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
