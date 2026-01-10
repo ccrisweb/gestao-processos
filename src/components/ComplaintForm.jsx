@@ -57,10 +57,10 @@ export default function ComplaintForm({
     cpf_cnpj: "",
     recebido_por: "",
     // Grupo 4
-    prazo_inicial: 0,
+    prazo_dias: 0,
     data_inicial: "",
     data_final: "",
-    prorrogacao: 0,
+    prorrogacao_dias: 0,
     prorrogado_ate: "",
     // Grupo 5
     categoria: "",
@@ -77,6 +77,17 @@ export default function ComplaintForm({
       setFormData(initialData);
     }
   }, [initialData]);
+
+  // Handle ESC key to exit
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        navigate(-1);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [navigate]);
 
   const calculateDataFinal = (start, days) => {
     if (!start || !days) return "";
@@ -109,29 +120,29 @@ export default function ComplaintForm({
       const newData = { ...prev, [name]: value };
 
       // Auto-calculate Data Final logic
-      if (name === "data_inicial" || name === "prazo_inicial") {
+      if (name === "data_inicial" || name === "prazo_dias") {
         const start = name === "data_inicial" ? value : prev.data_inicial;
-        const days = name === "prazo_inicial" ? value : prev.prazo_inicial;
+        const days = name === "prazo_dias" ? value : prev.prazo_dias;
 
         const newDataFinal = calculateDataFinal(start, days);
         if (newDataFinal) {
           newData.data_final = newDataFinal;
           // Recalculate prorrogado_ate if needed
-          if (prev.prorrogacao) {
+          if (prev.prorrogacao_dias) {
             newData.prorrogado_ate = calculateProrrogadoAte(
               newDataFinal,
-              prev.prorrogacao
+              prev.prorrogacao_dias
             );
           }
         }
       }
 
       // Auto-calculate Prorrogado Até logic
-      if (name === "data_final" || name === "prorrogacao") {
+      if (name === "data_final" || name === "prorrogacao_dias") {
         const end =
           name === "data_final" ? value : newData.data_final || prev.data_final;
         const days =
-          name === "prorrogacao" ? value : prev.prorrogacao;
+          name === "prorrogacao_dias" ? value : prev.prorrogacao;
 
         const newProrrogadoAte = calculateProrrogadoAte(end, days);
         if (newProrrogadoAte) {
@@ -168,8 +179,8 @@ export default function ComplaintForm({
       }
 
       // Numeric sanity
-      if (formData.prazo_inicial && Number(formData.prazo_inicial) < 0) {
-        errs.prazo_inicial = "Prazo deve ser >= 0.";
+      if (formData.prazo_dias && Number(formData.prazo_dias) < 0) {
+        errs.prazo_dias = "Prazo deve ser >= 0.";
       }
 
       // If both dates provided, ensure data_final is same or after
@@ -234,7 +245,7 @@ export default function ComplaintForm({
           });
 
           // Numeric fields — ensure numbers (or default 0)
-          const intFields = ["prazo_inicial", "prorrogacao"];
+          const intFields = ["prazo_dias", "prorrogacao_dias"];
           intFields.forEach((k) => {
             if (copy[k] === "" || copy[k] === undefined || copy[k] === null) {
               copy[k] = 0;
@@ -348,8 +359,8 @@ export default function ComplaintForm({
             >
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center border-2 mb-2 transition-all duration-500 ${currentStep >= step.id
-                    ? "border-indigo-500 bg-indigo-500/20 shadow-lg shadow-indigo-500/20"
-                    : "border-zinc-700 bg-zinc-800"
+                  ? "border-indigo-500 bg-indigo-500/20 shadow-lg shadow-indigo-500/20"
+                  : "border-zinc-700 bg-zinc-800"
                   }`}
               >
                 <step.icon size={20} />
@@ -534,9 +545,9 @@ export default function ComplaintForm({
             <Section title="Prazos" icon={Clock}>
               <Input
                 label="Prazo (Dias)"
-                name="prazo_inicial"
+                name="prazo_dias"
                 type="number"
-                value={formData.prazo_inicial}
+                value={formData.prazo_dias}
                 handleChange={handleChange}
                 placeholder="Ex: 30"
               />
@@ -564,9 +575,9 @@ export default function ComplaintForm({
               </div>
               <Input
                 label="Prorr. (Dias)"
-                name="prorrogacao"
+                name="prorrogacao_dias"
                 type="number"
-                value={formData.prorrogacao}
+                value={formData.prorrogacao_dias}
                 handleChange={handleChange}
                 placeholder="Ex: 15"
               />
@@ -631,6 +642,7 @@ export default function ComplaintForm({
                   className="w-full bg-zinc-900/50 border-2 border-zinc-700/50 rounded-xl px-4 py-3 text-white 
                   focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all duration-200
                   placeholder:text-zinc-600 hover:border-zinc-600 focus:bg-zinc-900"
+                  onFocus={(e) => e.target.select()}
                 />
               </div>
             </Section>
@@ -643,8 +655,8 @@ export default function ComplaintForm({
             type="button"
             onClick={prevStep}
             className={`px-6 py-3 rounded-xl font-bold transition-all ${currentStep === 1
-                ? "opacity-0 pointer-events-none"
-                : "bg-zinc-800 hover:bg-zinc-700 text-zinc-300"
+              ? "opacity-0 pointer-events-none"
+              : "bg-zinc-800 hover:bg-zinc-700 text-zinc-300"
               }`}
           >
             Voltar
@@ -725,6 +737,7 @@ const Input = ({
       className="bg-zinc-900/50 border-2 border-zinc-700/50 rounded-xl px-4 py-3 text-white 
       focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all duration-200
       placeholder:text-zinc-600 hover:border-zinc-600 focus:bg-zinc-900"
+      onFocus={(e) => e.target.select()}
       {...props}
     />
   </div>

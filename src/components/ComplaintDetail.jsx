@@ -100,10 +100,10 @@ export default function ComplaintDetail({ complaint, onClose, onEdit }) {
 
                     {/* Prazos */}
                     <Section title="Prazos" icon={Clock}>
-                        <Field label="Prazo (Dias)" value={complaint.prazo_inicial || '0'} />
+                        <Field label="Prazo (Dias)" value={complaint.prazo_dias || '0'} />
                         <Field label="Data Inicial" value={formatDate(complaint.data_inicial)} />
                         <Field label="Data Final" value={formatDate(complaint.data_final)} />
-                        <Field label="Prorrogação (Dias)" value={complaint.prorrogacao || '0'} />
+                        <Field label="Prorrogação (Dias)" value={complaint.prorrogacao_dias || '0'} />
                         <Field label="Prorrogado Até" value={formatDate(complaint.prorrogado_ate)} />
                     </Section>
 

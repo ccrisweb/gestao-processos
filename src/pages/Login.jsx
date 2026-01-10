@@ -93,10 +93,14 @@ export default function Login() {
       {/* Content */}
       <div className="max-w-md w-full space-y-8 glass p-8 rounded-xl shadow-2xl border border-zinc-700 relative z-20">
         <div className="text-center">
-          <div className="mx-auto h-12 w-12 bg-indigo-600 rounded-lg flex items-center justify-center">
-            <LayoutDashboard className="h-8 w-8 text-white" />
+          <div className="mx-auto flex items-center justify-center mb-6">
+            <img
+              src="./Antigravity.png"
+              alt="Logo Antigravity"
+              className="h-24 w-auto drop-shadow-lg transform hover:scale-105 transition-transform duration-300"
+            />
           </div>
-          <h2 className="mt-6 text-3xl font-extrabold text-white">
+          <h2 className="text-3xl font-extrabold text-white tracking-tight">
             {isLogin ? "Gestão de Denúncias" : "Criar Nova Conta"}
           </h2>
           <p className="mt-2 text-sm text-zinc-400">
