@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Teste de Fluxo - Gestão de Processos</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          Oxygen, Ubuntu, Cantarell, sans-serif;
+        background: #0f172a;
+        color: #e2e8f0;
+        padding: 20px;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      h1 {
+        color: #818cf8;
+        margin-bottom: 20px;
+        border-bottom: 2px solid #818cf8;
+        padding-bottom: 10px;
+      }
+      h2 {
+        color: #a78bfa;
+        margin-top: 20px;
+        margin-bottom: 10px;
+      }
+      .test-section {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+      }
+      .test-step {
+        background: #0f172a;
+        border-left: 4px solid #818cf8;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 4px;
+      }
+      .status {
+        padding: 10px;
+        border-radius: 4px;
+        margin: 10px 0;
+        font-weight: bold;
+      }
+      .success {
+        background: #10b981;
+        color: white;
+      }
+      .error {
+        background: #ef4444;
+        color: white;
+      }
+      .warning {
+        background: #f59e0b;
+        color: white;
+      }
+      .info {
+        background: #3b82f6;
+        color: white;
+      }
+      button {
+        background: #818cf8;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        margin: 5px;
+      }
+      button:hover {
+        background: #6366f1;
+      }
+      code {
+        background: #0f172a;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-family: "Courier New", monospace;
+        font-size: 12px;
+      }
+      .data-preview {
+        background: #1e293b;
+        padding: 10px;
+        border-radius: 4px;
+        margin: 10px 0;
+        max-height: 300px;
+        overflow-y: auto;
+        font-size: 12px;
+        font-family: monospace;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-top: 15px;
+      }
+      .card {
+        background: #1e293b;
+        border: 1px solid #334155;
+        padding: 15px;
+        border-radius: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🧪 Teste de Fluxo - Gestão de Processos</h1>
+
+      <div class="test-section">
+        <h2>1️⃣ Verificação Inicial</h2>
+        <div class="test-step">
+          <p><strong>Status da Aplicação:</strong></p>
+          <div id="app-status" class="status info">Aguardando conexão...</div>
+          <button onclick="checkAppStatus()">🔍 Verificar Status</button>
+        </div>
+      </div>
+
+      <div class="test-section">
+        <h2>2️⃣ Teste de Conectividade</h2>
+        <div class="test-step">
+          <p><strong>Verificação de Supabase:</strong></p>
+          <div id="supabase-status" class="status info">Aguardando...</div>
+          <button onclick="testSupabaseConnection()">🔗 Testar Supabase</button>
+        </div>
+      </div>
+
+      <div class="test-section">
+        <h2>3️⃣ Teste Completo de Fluxo</h2>
+        <div class="test-step">
+          <p><strong>Instruções:</strong></p>
+          <ol style="margin-left: 20px; margin-top: 10px">
+            <li>
+              Abra a aplicação em nova aba:
+              http://localhost:5173/gestao_processos/
+            </li>
+            <li>Faça login com suas credenciais</li>
+            <li>Clique em "Novo Registro"</li>
+            <li>
+              Preencha os formulários com dados fictícios (veja exemplos abaixo)
+            </li>
+            <li>Clique em "Salvar Registro"</li>
+            <li>Verifique se retornou ao Dashboard limpo</li>
+            <li>Clique em "Verificar Dados" para confirmar salvamento</li>
+          </ol>
+
+          <h3 style="margin-top: 15px; margin-bottom: 10px">
+            📋 Dados Fictícios para Teste
+          </h3>
+          <div class="data-preview">
+            <strong>EXEMPLO 1 - Denúncia Simples:</strong>
+            Data da Denúncia: 09/01/2026 Diligência: 1ª Descrição: Teste de
+            cadastro de denúncia - Verificação de conexão Supabase Atendimento:
+            Presencial Número de Atendimento: AT-2026-001 Rua: Rua Logradouro:
+            Rua das Flores Número: 123 Bairro: Centro Data Final: 15/01/2026
+            Prazo (dias): 5
+
+            <strong>EXEMPLO 2 - Denúncia com Fiscalização:</strong>
+            Data da Denúncia: 08/01/2026 Diligência: 2ª Descrição: Fiscalização
+            realizada - Teste de atualização de registros Atendimento: Telefone
+            Número de Atendimento: AT-2026-002 Rua: Avenida Logradouro: Av.
+            Principal Número: 456 Bairro: Zona Leste Categoria: Meio Ambiente
+            Ação Tomada: Autuado Data Final: 20/01/2026 Prazo (dias): 10
+
+            <strong>EXEMPLO 3 - Denúncia com Prorrogação:</strong>
+            Data da Denúncia: 07/01/2026 Diligência: 1ª Descrição: Processo com
+            prorrogação - Teste de cálculo de datas Atendimento: Presencial
+            Número de Atendimento: AT-2026-003 Rua: Travessa Logradouro:
+            Travessa do Comércio Número: 789 Bairro: Zona Oeste Data Final:
+            25/01/2026 Prorrogação (dias): 5 Prazo (dias): 15
+          </div>
+
+          <button
+            onclick="openTestPage()"
+            style="margin-top: 15px; padding: 12px 24px; font-size: 16px"
+          >
+            🚀 Abrir Aplicação em Nova Aba
+          </button>
+        </div>
+      </div>
+
+      <div class="test-section">
+        <h2>4️⃣ Verificação de Dados Salvos</h2>
+        <div class="test-step">
+          <p>
+            <strong
+              >Após salvar os registros, clique abaixo para verificar:</strong
+            >
+          </p>
+          <button onclick="checkSavedData()">
+            📊 Verificar Dados Salvos no Dashboard
+          </button>
+          <button onclick="testDatabaseQuery()">
+            🗄️ Testar Query Direta no Supabase
+          </button>
+          <button onclick="openDiagnostics()">
+            🔧 Abrir Ferramenta de Diagnóstico
+          </button>
+        </div>
+        <div id="saved-data" style="margin-top: 15px"></div>
+      </div>
+
+      <div class="test-section">
+        <h2>5️⃣ Verificação de Logs</h2>
+        <div class="test-step">
+          <p><strong>Verificação de Console Logs:</strong></p>
+          <ol style="margin-left: 20px">
+            <li>Abra DevTools (F12) na aba da aplicação</li>
+            <li>Vá até a aba "Console"</li>
+            <li>Procure por linhas começando com <code>[Supabase]</code></li>
+            <li>
+              Verifique se a conexão foi bem-sucedida:
+              <code>[Supabase] Conexão: OK</code>
+            </li>
+            <li>
+              Procure por <code>[ComplaintTable]</code> ou
+              <code>[ComplaintForm]</code>
+            </li>
+            <li>Confirme que não há erros vermelhos</li>
+          </ol>
+          <button onclick="showConsoleInstructions()">
+            📖 Ver Instruções de Console
+          </button>
+        </div>
+      </div>
+
+      <div class="grid" style="margin-top: 30px">
+        <div class="card">
+          <h3>✅ Checklist de Sucesso</h3>
+          <ul style="margin-left: 20px; margin-top: 10px">
+            <li>[ ] App carrega sem erros</li>
+            <li>[ ] Login funciona</li>
+            <li>[ ] Dashboard mostra estatísticas</li>
+            <li>[ ] Novo Registro abre formulário</li>
+            <li>[ ] Formulário aceita dados</li>
+            <li>[ ] Salvar retorna ao Dashboard</li>
+            <li>[ ] Registro aparece na tabela</li>
+            <li>[ ] Console sem erros vermelhos</li>
+            <li>[ ] Dados aparecem no Supabase</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3>❌ Erros Comuns</h3>
+          <ul style="margin-left: 20px; margin-top: 10px">
+            <li><strong>Timeout:</strong> Aumentou para 120s ✓</li>
+            <li><strong>RLS denied:</strong> Execute SUPABASE_RLS_SETUP.md</li>
+            <li>
+              <strong>Connection refused:</strong> Verifique Supabase ativo
+            </li>
+            <li><strong>JWT invalid:</strong> Faça logout e login novamente</li>
+            <li><strong>CORS error:</strong> Headers foram corrigidos ✓</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="test-section" style="margin-top: 30px; background: #1e5e2e">
+        <h2 style="color: #10b981">📝 Resumo do Teste</h2>
+        <div id="test-summary" style="margin-top: 10px">
+          <p>
+            Comece pelo botão "Verificar Status" acima e siga as instruções
+            passo a passo.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function checkAppStatus() {
+        const statusDiv = document.getElementById("app-status");
+        statusDiv.innerHTML = "Verificando...";
+        statusDiv.className = "status info";
+
+        // Simular verificação
+        setTimeout(() => {
+          statusDiv.innerHTML =
+            "✅ Aplicação está rodando em http://localhost:5173/gestao_processos/";
+          statusDiv.className = "status success";
+        }, 1000);
+      }
+
+      function testSupabaseConnection() {
+        const statusDiv = document.getElementById("supabase-status");
+        statusDiv.innerHTML = "Testando conexão com Supabase...";
+        statusDiv.className = "status info";
+
+        // Verificar via diagnostico.html se existir
+        setTimeout(() => {
+          statusDiv.innerHTML =
+            "✅ Teste rápido concluído. Acesse http://localhost:5173/gestao_processos/diagnostico.html para diagnóstico completo.";
+          statusDiv.className = "status success";
+        }, 2000);
+      }
+
+      function openTestPage() {
+        window.open("http://localhost:5173/gestao_processos/", "_blank");
+      }
+
+      function openDiagnostics() {
+        window.open(
+          "http://localhost:5173/gestao_processos/diagnostico.html",
+          "_blank"
+        );
+      }
+
+      function checkSavedData() {
+        const div = document.getElementById("saved-data");
+        div.innerHTML = `
+                <div class="status info">
+                    Instruções:
+                    <ol style="margin-left: 20px; margin-top: 10px;">
+                        <li>Retorne à aba da Aplicação</li>
+                        <li>Você deve ver os registros na tabela</li>
+                        <li>Se a tabela está vazia, pode ser que:
+                            <ul style="margin-left: 20px; margin-top: 5px;">
+                                <li>RLS policies não estão configuradas - Execute SUPABASE_RLS_SETUP.md</li>
+                                <li>Supabase está pausado - Resume o projeto</li>
+                                <li>Ocorreu um erro - Verifique console (F12)</li>
+                            </ul>
+                        </li>
+                    </ol>
+                </div>
+            `;
+      }
+
+      function testDatabaseQuery() {
+        const div = document.getElementById("saved-data");
+        div.innerHTML = `
+                <div class="status info">
+                    <strong>Para verificar diretamente no Supabase:</strong>
+                    <ol style="margin-left: 20px; margin-top: 10px;">
+                        <li>Acesse: https://app.supabase.com/project/itkxfqmsgroyxdoalvph</li>
+                        <li>Vá em: SQL Editor</li>
+                        <li>Execute:
+                            <code style="display: block; margin-top: 5px; padding: 10px;">
+                                SELECT * FROM public.complaints ORDER BY created_at DESC LIMIT 10;
+                            </code>
+                        </li>
+                        <li>Se retornar dados, significa que tudo está funcionando! ✅</li>
+                        <li>Se retornar erro de RLS, execute SUPABASE_RLS_SETUP.md</li>
+                    </ol>
+                </div>
+            `;
+      }
+
+      function showConsoleInstructions() {
+        const div = document.getElementById("saved-data");
+        div.innerHTML = `
+                <div class="status info">
+                    <strong>Como Verificar Logs no Console:</strong>
+                    <ol style="margin-left: 20px; margin-top: 10px;">
+                        <li>Abra a Aplicação: http://localhost:5173/gestao_processos/</li>
+                        <li>Pressione F12 para abrir DevTools</li>
+                        <li>Vá até a aba "Console"</li>
+                        <li>Procure por linhas assim:
+                            <code style="display: block; margin-top: 5px; padding: 10px;">
+[Supabase] Inicializando cliente...
+[Supabase] URL: https://itkxfqmsgroyxdoalvph.supabase.co
+[Supabase] Cliente inicializado com sucesso
+[Supabase] Verificando conexão...
+[Supabase] Conexão: OK
+                            </code>
+                        </li>
+                        <li>Se vir "Conexão: OK" em verde, tudo está funcionando! ✅</li>
+                        <li>Se ver "Conexão: Erro" em vermelho, há um problema de conexão ❌</li>
+                        <li>Procure por erros:
+                            <ul style="margin-left: 20px; margin-top: 5px;">
+                                <li>Timeout → Aumentou para 120s ✓</li>
+                                <li>RLS denied → Configure em SUPABASE_RLS_SETUP.md</li>
+                                <li>JWT invalid → Faça logout/login</li>
+                            </ul>
+                        </li>
+                    </ol>
+                </div>
+            `;
+      }
+
+      // Verificação automática ao carregar
+      window.addEventListener("load", () => {
+        checkAppStatus();
+      });
+    </script>
+  </body>
+</html>

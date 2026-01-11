@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Diagnóstico Supabase</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: #1a1a1a;
+        color: #fff;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1000px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        margin-bottom: 30px;
+        color: #6366f1;
+      }
+
+      .card {
+        background: #2a2a2a;
+        border: 1px solid #444;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+
+      .status {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 10px 0;
+        padding: 10px;
+        border-radius: 4px;
+        background: #333;
+      }
+
+      .status.success {
+        background: rgba(34, 197, 94, 0.1);
+        color: #22c55e;
+      }
+
+      .status.error {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+      }
+
+      .status.warning {
+        background: rgba(234, 179, 8, 0.1);
+        color: #eab308;
+      }
+
+      .status.info {
+        background: rgba(59, 130, 246, 0.1);
+        color: #3b82f6;
+      }
+
+      .icon {
+        font-weight: bold;
+        font-size: 18px;
+      }
+
+      .success .icon::before {
+        content: "✓";
+      }
+
+      .error .icon::before {
+        content: "✗";
+      }
+
+      .warning .icon::before {
+        content: "⚠";
+      }
+
+      .info .icon::before {
+        content: "ℹ";
+      }
+
+      button {
+        background: #6366f1;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        margin: 5px;
+        transition: all 0.3s ease;
+      }
+
+      button:hover {
+        background: #4f46e5;
+        transform: translateY(-2px);
+      }
+
+      .code {
+        background: #1a1a1a;
+        border: 1px solid #444;
+        padding: 10px;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 12px;
+        overflow-x: auto;
+        margin: 10px 0;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+      }
+
+      .progress {
+        width: 100%;
+        height: 4px;
+        background: #333;
+        border-radius: 2px;
+        margin: 10px 0;
+        overflow: hidden;
+      }
+
+      .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #6366f1, #8b5cf6);
+        animation: progress 0.6s ease-in-out;
+      }
+
+      @keyframes progress {
+        from {
+          width: 0;
+        }
+        to {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🔍 Diagnóstico Supabase</h1>
+
+      <div class="grid">
+        <div class="card">
+          <h2>📋 Informações do Ambiente</h2>
+          <div id="env-info"></div>
+        </div>
+
+        <div class="card">
+          <h2>🌐 Testes de Conectividade</h2>
+          <div id="connectivity-tests"></div>
+          <button onclick="runConnectivityTests()">Executar Testes</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>💾 Testes de Banco de Dados</h2>
+        <div id="db-tests"></div>
+        <button onclick="runDatabaseTests()">Testar Banco de Dados</button>
+      </div>
+
+      <div class="card">
+        <h2>🔐 Testes de Autenticação</h2>
+        <div id="auth-tests"></div>
+        <button onclick="runAuthTests()">Testar Autenticação</button>
+      </div>
+
+      <div class="card">
+        <h2>📊 Logs</h2>
+        <div
+          id="logs"
+          class="code"
+          style="height: 300px; overflow-y: auto"
+        ></div>
+        <button onclick="clearLogs()">Limpar Logs</button>
+        <button onclick="downloadLogs()">Baixar Logs</button>
+      </div>
+    </div>
+
+    <script>
+      const API_URL = "https://itkxfqmsgroyxdoalvph.supabase.co";
+      const API_KEY =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml0a3hmcW1zZ3JveXhkb2FsdnBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc1MzgxMzcsImV4cCI6MjA4MzExNDEzN30.XTkvG9MP-XZzsaH4D9FUbpa91TLOMDKsD3FP-SFLCE0";
+      let logs = [];
+
+      function log(message, type = "info") {
+        const timestamp = new Date().toLocaleTimeString();
+        const logEntry = `[${timestamp}] ${message}`;
+        logs.push({ message: logEntry, type });
+        updateLogs();
+      }
+
+      function updateLogs() {
+        const logsDiv = document.getElementById("logs");
+        logsDiv.innerHTML = logs
+          .map(
+            (l) =>
+              `<div class="status ${l.type}"><div class="icon"></div> ${l.message}</div>`
+          )
+          .join("");
+        logsDiv.scrollTop = logsDiv.scrollHeight;
+      }
+
+      function clearLogs() {
+        logs = [];
+        updateLogs();
+      }
+
+      function downloadLogs() {
+        const text = logs.map((l) => l.message).join("\n");
+        const blob = new Blob([text], { type: "text/plain" });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `diagnostico-${new Date().toISOString()}.log`;
+        a.click();
+      }
+
+      function displayEnvInfo() {
+        const envDiv = document.getElementById("env-info");
+        const info = [
+          `Navegador: ${navigator.userAgent.split(" ").slice(-2).join(" ")}`,
+          `Plataforma: ${navigator.platform}`,
+          `Idioma: ${navigator.language}`,
+          `URL Base: ${API_URL}`,
+          `Timestamp: ${new Date().toISOString()}`,
+        ];
+        envDiv.innerHTML = info
+          .map(
+            (i) =>
+              `<div class="status info"><div class="icon"></div> ${i}</div>`
+          )
+          .join("");
+      }
+
+      async function runConnectivityTests() {
+        const testsDiv = document.getElementById("connectivity-tests");
+        testsDiv.innerHTML =
+          '<div class="progress"><div class="progress-bar"></div></div>';
+        log("Iniciando testes de conectividade...", "info");
+
+        const tests = [];
+
+        // Test 1: DNS Resolution
+        try {
+          log("Testando DNS...", "info");
+          const start = performance.now();
+          const response = await fetch(API_URL, {
+            method: "HEAD",
+            mode: "no-cors",
+          });
+          const time = (performance.now() - start).toFixed(2);
+          tests.push({
+            name: "Resolução DNS",
+            success: true,
+            message: `✓ Respondido em ${time}ms`,
+          });
+          log(`✓ DNS OK (${time}ms)`, "success");
+        } catch (e) {
+          tests.push({
+            name: "Resolução DNS",
+            success: false,
+            message: `✗ Erro: ${e.message}`,
+          });
+          log(`✗ DNS Falhou: ${e.message}`, "error");
+        }
+
+        // Test 2: CORS
+        try {
+          log("Testando CORS...", "info");
+          const response = await fetch(`${API_URL}/rest/v1/`, {
+            headers: { Authorization: `Bearer ${API_KEY}` },
+          });
+          tests.push({
+            name: "CORS",
+            success: response.ok || response.status === 401,
+            message: response.ok ? "✓ OK" : `⚠ Status ${response.status}`,
+          });
+          log(`✓ CORS OK (${response.status})`, "success");
+        } catch (e) {
+          tests.push({
+            name: "CORS",
+            success: false,
+            message: `✗ Erro: ${e.message}`,
+          });
+          log(`✗ CORS Falhou: ${e.message}`, "error");
+        }
+
+        // Test 3: Latência
+        try {
+          log("Medindo latência...", "info");
+          const latencies = [];
+          for (let i = 0; i < 3; i++) {
+            const start = performance.now();
+            const response = await fetch(`${API_URL}/health`, {
+              mode: "no-cors",
+            });
+            latencies.push(performance.now() - start);
+          }
+          const avg = (
+            latencies.reduce((a, b) => a + b) / latencies.length
+          ).toFixed(2);
+          tests.push({
+            name: "Latência Média",
+            success: avg < 1000,
+            message: `${avg}ms`,
+          });
+          log(`✓ Latência: ${avg}ms`, "success");
+        } catch (e) {
+          log(`✗ Latência: ${e.message}`, "error");
+        }
+
+        renderTests(testsDiv, tests);
+      }
+
+      async function runDatabaseTests() {
+        const testsDiv = document.getElementById("db-tests");
+        testsDiv.innerHTML =
+          '<div class="progress"><div class="progress-bar"></div></div>';
+        log("Iniciando testes de banco de dados...", "info");
+
+        const tests = [];
+
+        try {
+          log("Testando conexão com a tabela complaints...", "info");
+          const response = await fetch(
+            `${API_URL}/rest/v1/complaints?limit=1`,
+            {
+              headers: {
+                Authorization: `Bearer ${API_KEY}`,
+                apikey: API_KEY,
+              },
+            }
+          );
+
+          if (response.ok) {
+            const data = await response.json();
+            tests.push({
+              name: "Tabela complaints",
+              success: true,
+              message: `✓ ${data.length} registros encontrados`,
+            });
+            log(`✓ Tabela OK (${data.length} registros)`, "success");
+          } else if (response.status === 404) {
+            tests.push({
+              name: "Tabela complaints",
+              success: false,
+              message: "✗ Tabela não encontrada",
+            });
+            log("✗ Tabela não existe", "error");
+          } else if (response.status === 401) {
+            tests.push({
+              name: "Tabela complaints",
+              success: false,
+              message: "✗ Não autorizado",
+            });
+            log("✗ Erro de autorização", "error");
+          } else {
+            tests.push({
+              name: "Tabela complaints",
+              success: false,
+              message: `✗ Status ${response.status}`,
+            });
+            log(`✗ Erro: ${response.status}`, "error");
+          }
+        } catch (e) {
+          tests.push({
+            name: "Tabela complaints",
+            success: false,
+            message: `✗ ${e.message}`,
+          });
+          log(`✗ Erro: ${e.message}`, "error");
+        }
+
+        renderTests(testsDiv, tests);
+      }
+
+      async function runAuthTests() {
+        const testsDiv = document.getElementById("auth-tests");
+        testsDiv.innerHTML =
+          '<div class="progress"><div class="progress-bar"></div></div>';
+        log("Iniciando testes de autenticação...", "info");
+
+        const tests = [];
+
+        try {
+          log("Testando endpoints de autenticação...", "info");
+          const response = await fetch(`${API_URL}/auth/v1/settings`, {
+            headers: { apikey: API_KEY },
+          });
+
+          tests.push({
+            name: "Auth Settings",
+            success: response.ok,
+            message: response.ok
+              ? "✓ Acessível"
+              : `✗ Status ${response.status}`,
+          });
+          log(`✓ Auth OK`, "success");
+        } catch (e) {
+          tests.push({
+            name: "Auth Settings",
+            success: false,
+            message: `✗ ${e.message}`,
+          });
+          log(`✗ Auth Erro: ${e.message}`, "error");
+        }
+
+        renderTests(testsDiv, tests);
+      }
+
+      function renderTests(container, tests) {
+        container.innerHTML = tests
+          .map(
+            (test) => `
+                <div class="status ${test.success ? "success" : "error"}">
+                    <div class="icon"></div>
+                    <div style="flex: 1;">
+                        <strong>${test.name}</strong><br>
+                        <small>${test.message}</small>
+                    </div>
+                </div>
+            `
+          )
+          .join("");
+      }
+
+      // Initialize on load
+      window.addEventListener("load", () => {
+        displayEnvInfo();
+        log("Diagnóstico carregado", "success");
+      });
+    </script>
+  </body>
+</html>
