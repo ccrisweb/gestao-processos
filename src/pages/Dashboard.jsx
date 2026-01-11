@@ -9,7 +9,6 @@ import {
   PlusCircle,
   LogOut,
   TrendingUp,
-  Calendar,
   AlertCircle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -19,7 +18,7 @@ export default function Dashboard() {
   const { user, signOut } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
-  const [stats, setStats] = useState({ total: 0, open: 0, expired: 0 });
+  const [stats, setStats] = useState({ total: 0, open: 0, expired: 0, extended: 0 });
   const [loadingStats, setLoadingStats] = useState(true);
   const [chartData, setChartData] = useState({ byStatus: [], byMonth: [] });
 
@@ -30,10 +29,6 @@ export default function Dashboard() {
   const fetchStats = async () => {
     setLoadingStats(true);
     try {
-      console.log("[Dashboard] Iniciando busca de estatísticas...");
-
-      // Simple count query - optimization: use count() instead of fetching all
-      // For MVP/small data, fetching all is fine or using specific RPCs
       const { count: total, error: countError } = await Promise.race([
         supabase.from("complaints").select("*", { count: "exact", head: true }),
         new Promise((_, reject) =>
@@ -41,14 +36,8 @@ export default function Dashboard() {
         ),
       ]);
 
-      if (countError) {
-        console.error("[Dashboard] Erro ao contar registros:", countError);
-        throw countError;
-      }
+      if (countError) throw countError;
 
-      console.log("[Dashboard] Total de registros:", total);
-
-      // For expired/open, we'd need date logic. simpler to query all ID + Dates
       const { data, error: dataError } = await Promise.race([
         supabase.from("complaints").select("data_final, prorrogado_ate"),
         new Promise((_, reject) =>
@@ -56,44 +45,24 @@ export default function Dashboard() {
         ),
       ]);
 
-      if (dataError) {
-        console.error("[Dashboard] Erro ao buscar datas:", dataError);
-        throw dataError;
-      }
-
-      console.log("[Dashboard] Registros com datas:", data?.length || 0);
+      if (dataError) throw dataError;
 
       if (data) {
-        let open = 0; // AGUARDAR
-        let expired = 0; // VENCIDO
-        let extended = 0; // PRORROGADO
-        let pending = 0; // Other
+        let open = 0;
+        let expired = 0;
+        let extended = 0;
+        let pending = 0;
 
         data.forEach((item) => {
           const status = getStatus(item);
-
-          if (status.label === "AGUARDAR") {
-            open++;
-          } else if (status.label === "VENCIDO") {
-            expired++;
-          } else if (status.label === "PRORROGADO") {
-            extended++;
-          } else {
-            pending++;
-          }
-        });
-
-        console.log("[Dashboard] Estatísticas:", {
-          total,
-          open,
-          expired,
-          extended,
-          pending,
+          if (status.label === "AGUARDAR") open++;
+          else if (status.label === "VENCIDO") expired++;
+          else if (status.label === "PRORROGADO") extended++;
+          else pending++;
         });
 
         setStats({ total: total || 0, open, expired, extended });
 
-        // Prepare chart data
         setChartData({
           byStatus: [
             { label: "Em Aberto", value: open, color: "#22c55e" },
@@ -106,15 +75,20 @@ export default function Dashboard() {
       }
     } catch (error) {
       console.error("[Dashboard] Erro ao buscar estatísticas:", error);
-      console.error("[Dashboard] Código:", error.code);
-      console.error("[Dashboard] Mensagem:", error.message);
-
-      // Set empty stats on error
-      setStats({ total: 0, open: 0, expired: 0 });
+      setStats({ total: 0, open: 0, expired: 0, extended: 0 });
       setChartData({ byStatus: [], byMonth: [] });
     } finally {
       setLoadingStats(false);
-      console.log("[Dashboard] Busca de estatísticas finalizada");
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate("/login", { replace: true });
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("Erro ao sair do sistema.");
     }
   };
 
@@ -139,7 +113,7 @@ export default function Dashboard() {
               Novo Registro
             </button>
             <button
-              onClick={signOut}
+              onClick={handleLogout}
               className="flex items-center justify-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg border border-zinc-700 transition-all text-zinc-300 hover-lift"
               title="Sair"
             >
@@ -186,7 +160,6 @@ export default function Dashboard() {
         {/* Charts Section */}
         {!loadingStats && chartData.byStatus.length > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Pie Chart - Status Distribution */}
             <div className="bg-zinc-800/50 backdrop-blur border border-zinc-700 p-6 rounded-2xl hover:border-indigo-500/30 transition-all animate-scale-in delay-300 hover-lift">
               <div className="flex items-center gap-2 mb-6">
                 <TrendingUp className="text-indigo-400" size={24} />
@@ -197,7 +170,6 @@ export default function Dashboard() {
               <PieChart data={chartData.byStatus} size={220} />
             </div>
 
-            {/* Bar Chart - Status Breakdown */}
             <div className="bg-zinc-800/50 backdrop-blur border border-zinc-700 p-6 rounded-2xl hover:border-purple-500/30 transition-all animate-scale-in delay-400 hover-lift">
               <div className="flex items-center gap-2 mb-6">
                 <AlertCircle className="text-purple-400" size={24} />
