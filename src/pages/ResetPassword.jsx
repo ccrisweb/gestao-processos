@@ -6,12 +6,24 @@ import { Lock, ArrowLeft, Save } from "lucide-react";
 
 export default function ResetPassword() {
     const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const toast = useToast();
     const navigate = useNavigate();
 
     const handleUpdatePassword = async (e) => {
         e.preventDefault();
+
+        if (password !== confirmPassword) {
+            toast.error("As senhas não coincidem!");
+            return;
+        }
+
+        if (password.length < 6) {
+            toast.error("A senha deve ter pelo menos 6 caracteres.");
+            return;
+        }
+
         setLoading(true);
 
         try {
@@ -47,25 +59,49 @@ export default function ResetPassword() {
                 </div>
 
                 <form className="mt-8 space-y-6" onSubmit={handleUpdatePassword}>
-                    <div>
-                        <label htmlFor="new-password" className="sr-only">
-                            Nova Senha
-                        </label>
-                        <div className="relative group">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <Lock className="h-5 w-5 text-zinc-500 group-focus-within:text-indigo-400 transition-colors" />
+                    <div className="space-y-4">
+                        <div>
+                            <label htmlFor="new-password" className="sr-only">
+                                Nova Senha
+                            </label>
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <Lock className="h-5 w-5 text-zinc-500 group-focus-within:text-indigo-400 transition-colors" />
+                                </div>
+                                <input
+                                    id="new-password"
+                                    name="new-password"
+                                    type="password"
+                                    required
+                                    className="appearance-none rounded-xl relative block w-full pl-10 px-4 py-3 border border-zinc-600 placeholder-zinc-500 text-white bg-zinc-900/80 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 sm:text-sm transition-all"
+                                    placeholder="Nova senha"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    minLength={6}
+                                />
                             </div>
-                            <input
-                                id="new-password"
-                                name="new-password"
-                                type="password"
-                                required
-                                className="appearance-none rounded-xl relative block w-full pl-10 px-4 py-3 border border-zinc-600 placeholder-zinc-500 text-white bg-zinc-900/80 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 sm:text-sm transition-all"
-                                placeholder="Nova senha"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                minLength={6}
-                            />
+                        </div>
+
+                        <div>
+                            <label htmlFor="confirm-password" className="sr-only">
+                                Confirmar Senha
+                            </label>
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <Lock className="h-5 w-5 text-zinc-500 group-focus-within:text-indigo-400 transition-colors" />
+                                </div>
+                                <input
+                                    id="confirm-password"
+                                    name="confirm-password"
+                                    type="password"
+                                    required
+                                    className="appearance-none rounded-xl relative block w-full pl-10 px-4 py-3 border border-zinc-600 placeholder-zinc-500 text-white bg-zinc-900/80 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 sm:text-sm transition-all"
+                                    placeholder="Confirme a nova senha"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    minLength={6}
+                                />
+                            </div>
                         </div>
                     </div>
 

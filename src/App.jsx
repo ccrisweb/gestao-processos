@@ -15,6 +15,7 @@ function App() {
     <AuthProvider>
       <ToastProvider>
         <HashRouter>
+          <AuthListener />
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/reset-password" element={<ResetPassword />} />
@@ -24,9 +25,6 @@ function App() {
               <Route path="/new" element={<NewComplaint />} />
               <Route path="/edit/:id" element={<EditComplaint />} />
             </Route>
-
-            {/* Auth Listener to handle Password Recovery event */}
-            <Route element={<AuthListener />} />
 
             {/* Catch all - Redirect to login by default */}
             <Route path="*" element={<Navigate to="/login" replace />} />
