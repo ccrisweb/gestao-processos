@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import NewComplaint from "./pages/NewComplaint";
 import EditComplaint from "./pages/EditComplaint";
 import ResetPassword from "./pages/ResetPassword";
+import ForgotPassword from "./pages/ForgotPassword";
 import AuthListener from "./components/AuthListener";
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
           <AuthListener />
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
 
             <Route element={<ProtectedRoute />}>

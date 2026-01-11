@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Lock, Mail, CheckSquare, Square, ArrowLeft, UserPlus, LogIn } from "lucide-react";
 import { supabase } from "../lib/supabase";
 
@@ -29,42 +29,6 @@ export default function Login() {
       setRememberMe(true);
     }
   }, []);
-
-  const handleForgotPassword = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    setMessage("");
-
-    if (!email) {
-      setError("Digite seu email para recuperar a senha.");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      // Determine the redirect URL based on environment
-      // For production (GitHub Pages), we want to redirect to the repository root
-      // Supabase will append the hash fragment with the token
-      const redirectUrl = window.location.hostname === 'localhost'
-        ? window.location.origin
-        : 'https://ccrisweb.github.io/gestao_processos/';
-
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: redirectUrl,
-      });
-
-      if (error) throw error;
-
-      setMessage("Email de recuperação enviado! Verifique sua caixa de entrada.");
-      toast.success("Email enviado com sucesso!");
-    } catch (err) {
-      setError(err.message || "Erro ao enviar email de recuperação.");
-      toast.error("Erro ao enviar email.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -181,7 +145,7 @@ export default function Login() {
 
 
 
-        <form className="mt-8 space-y-6" onSubmit={mode === 'forgot' ? handleForgotPassword : handleSubmit}>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
             <div className="bg-red-500/10 border border-red-500/50 text-red-400 rounded-lg p-3 text-sm text-center animate-shake">
               {error}
@@ -214,26 +178,24 @@ export default function Login() {
               </div>
             </div>
 
-            {mode !== 'forgot' && (
-              <div>
-                <label htmlFor="password" className="sr-only">Senha</label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-zinc-500 group-focus-within:text-indigo-400 transition-colors" />
-                  </div>
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    required
-                    className="appearance-none rounded-xl relative block w-full pl-10 px-4 py-3 border border-zinc-600 placeholder-zinc-500 text-white bg-zinc-900/80 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 sm:text-sm transition-all"
-                    placeholder="Sua senha secreta"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
+            <div>
+              <label htmlFor="password" className="sr-only">Senha</label>
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className="h-5 w-5 text-zinc-500 group-focus-within:text-indigo-400 transition-colors" />
                 </div>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  className="appearance-none rounded-xl relative block w-full pl-10 px-4 py-3 border border-zinc-600 placeholder-zinc-500 text-white bg-zinc-900/80 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 sm:text-sm transition-all"
+                  placeholder="Sua senha secreta"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
               </div>
-            )}
+            </div>
           </div>
 
           <div className="flex items-center justify-between">
@@ -252,13 +214,12 @@ export default function Login() {
 
             {mode === 'login' && (
               <div className="text-sm">
-                <button
-                  type="button"
-                  onClick={() => setMode('forgot')}
+                <Link
+                  to="/forgot-password"
                   className="font-medium text-indigo-400 hover:text-indigo-300 transition-colors"
                 >
                   Esqueceu a senha?
-                </button>
+                </Link>
               </div>
             )}
           </div>
