@@ -15,9 +15,8 @@ export default function ForgotPassword() {
         setLoading(true);
 
         try {
-            const redirectUrl = window.location.hostname === 'localhost'
-                ? window.location.origin
-                : 'https://ccrisweb.github.io/gestao_processos/';
+            const baseUrl = window.location.origin + window.location.pathname;
+            const redirectUrl = baseUrl.endsWith('/') ? `${baseUrl}#/reset-password` : `${baseUrl}/#/reset-password`;
 
             const { error } = await supabase.auth.resetPasswordForEmail(email, {
                 redirectTo: redirectUrl,
